@@ -1,0 +1,55 @@
+apply plugin: 'java-library'
+apply plugin: 'maven'
+
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath 'org.ajoberstar:grgit:1.4.+'
+  }
+}
+
+ext {
+  git = org.ajoberstar.grgit.Grgit.open()
+  gitVersion = "${git.describe()}"
+}
+
+group = "world.bilo"
+version = gitVersion
+
+sourceCompatibility = 1.7
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+repositories {
+  jcenter()
+  mavenLocal() 
+}
+
+sourceSets {
+  main {
+    java {
+      srcDir 'src'
+    }
+  }
+  test {
+    java {
+      srcDirs = ["test"] 
+    }
+  }
+}
+
+dependencies {
+  compile 'world.bilo:bilo-util:1.0.0'
+  compile 'world.bilo:bilo-stack:1.0.0'
+  testCompile 'junit:junit:4.+'
+  testCompile 'org.mockito:mockito-core:2.+'
+  testRuntime 'org.mockito:mockito-core:2.+'
+}
+
+jar {
+  manifest {
+    attributes('Implementation-Title': project.name,
+               'Implementation-Version': project.version)
+  }
+}
