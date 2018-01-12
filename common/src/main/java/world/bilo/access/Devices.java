@@ -12,6 +12,8 @@ public interface Devices {
 
 	public void disconnect();
 
+	//TODO replace with events
+	@Deprecated
 	public Device getConnectedDevice();
 
 	public Collection<? extends Device> getDevices();
