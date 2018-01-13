@@ -1,55 +1,32 @@
-apply plugin: 'java-library'
+import org.ajoberstar.grgit.Grgit
+
 apply plugin: 'maven'
 
 buildscript {
-  repositories {
-    jcenter()
-  }
-  dependencies {
-    classpath 'org.ajoberstar:grgit:1.4.+'
-  }
-}
-
-ext {
-  git = org.ajoberstar.grgit.Grgit.open()
-  gitVersion = "${git.describe()}"
-}
-
-group = "world.bilo"
-version = gitVersion
-
-sourceCompatibility = 1.7
-[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
-
-repositories {
-  jcenter()
-  mavenLocal() 
-}
-
-sourceSets {
-  main {
-    java {
-      srcDir 'src'
+    repositories {
+        jcenter()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
-  }
-  test {
-    java {
-      srcDirs = ["test"] 
+    dependencies {
+        classpath 'org.ajoberstar:grgit:1.5.0'
     }
-  }
 }
 
-dependencies {
-  compile 'world.bilo:bilo-util:1.0.0'
-  compile 'world.bilo:bilo-stack:1.0.0'
-  testCompile 'junit:junit:4.+'
-  testCompile 'org.mockito:mockito-core:2.+'
-  testRuntime 'org.mockito:mockito-core:2.+'
+allprojects {
+    apply plugin: "eclipse"
+    apply plugin: "idea"
+
+    ext {
+        def grgit = Grgit.open(currentDir: project.rootProject.rootDir)
+        gitVersion = "${grgit.describe()}"
+        appName = "bilo-access"
+    }
+
+    group = "world.bilo"
+    version = gitVersion
+
 }
 
-jar {
-  manifest {
-    attributes('Implementation-Title': project.name,
-               'Implementation-Version': project.version)
-  }
+tasks.eclipse.doLast {
+    delete ".project"
 }
