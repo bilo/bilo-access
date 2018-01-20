@@ -17,10 +17,5 @@
         android:orientation="vertical"
         android:weightSum="1">
 
-        <ListView
-            android:id="@+id/blocks"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
     </LinearLayout>
 </RelativeLayout>

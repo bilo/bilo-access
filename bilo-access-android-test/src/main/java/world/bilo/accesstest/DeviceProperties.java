@@ -3,15 +3,13 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.stackdemo;
+package world.bilo.accesstest;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import world.bilo.stackdemo.R;
 
 public class DeviceProperties extends Fragment {
     @Override

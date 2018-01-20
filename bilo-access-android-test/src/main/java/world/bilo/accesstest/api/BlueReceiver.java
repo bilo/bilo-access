@@ -3,15 +3,14 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.stackdemo.api;
+package world.bilo.accesstest.api;
 
 import android.os.Handler;
 import android.os.Message;
 
-import world.bilo.stackdemo.DisconnectHandler;
-import world.bilo.stackdemo.MessageId;
-import com.bloctesian.stream.StreamBlocks;
-
+import world.bilo.accesstest.DisconnectHandler;
+import world.bilo.accesstest.MessageId;
+import world.bilo.stack.stream.StreamBlocks;
 import java.util.List;
 
 public class BlueReceiver extends Handler {

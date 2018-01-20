@@ -3,11 +3,10 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.stackdemo.api;
+package world.bilo.accesstest.api;
 
-import world.bilo.stackdemo.bluetooth.Supervisor;
-import com.bloctesian.stream.Stream;
-
+import world.bilo.accesstest.bluetooth.Supervisor;
+import world.bilo.stack.stream.Stream;
 import java.util.List;
 
 public class BlueSender implements Stream {

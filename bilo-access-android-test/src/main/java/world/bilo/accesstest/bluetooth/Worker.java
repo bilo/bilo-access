@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.stackdemo.bluetooth;
+package world.bilo.accesstest.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 
-import com.bloctesian.Logger;
+import world.bilo.stack.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;

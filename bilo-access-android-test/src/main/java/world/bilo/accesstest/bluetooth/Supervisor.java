@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.stackdemo.bluetooth;
+package world.bilo.accesstest.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 
-import com.bloctesian.Logger;
-
 import java.util.List;
+
+import world.bilo.stack.Logger;
 
 public class Supervisor {
     private final WorkHandler reader;

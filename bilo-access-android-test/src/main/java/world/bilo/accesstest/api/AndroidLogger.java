@@ -3,11 +3,10 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.stackdemo.api;
+package world.bilo.accesstest.api;
 
 import android.util.Log;
-
-import com.bloctesian.Logger;
+import world.bilo.stack.Logger;
 
 public class AndroidLogger implements Logger {
     static final private String Name = "bilo.stackdemo";

@@ -3,28 +3,21 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.stackdemo;
+package world.bilo.accesstest;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 
-import com.bloctesian.Block;
-import world.bilo.stackdemo.R;
-
-import world.bilo.stackdemo.api.Blocks;
-import world.bilo.stackdemo.bluetooth.Devices;
+import world.bilo.accesstest.api.Blocks;
+import world.bilo.accesstest.bluetooth.Devices;
 
 //TODO handle device rotation
 
 public class DeviceViewActivity extends AppCompatActivity implements DisconnectHandler {
     final private Blocks blocks = new Blocks(this);
-    private BlockProperties blockProperties;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,20 +32,6 @@ public class DeviceViewActivity extends AppCompatActivity implements DisconnectH
         if (device == null) {
             disconnected();
         }
-
-        ListView blocksView = (ListView) findViewById(R.id.blocks);
-        BlockListViewAdapter adapter = new BlockListViewAdapter(this, blocks.getBase(), blocks.getBlocks());
-        blocksView.setAdapter(adapter);
-
-        blockProperties = (BlockProperties) getSupportFragmentManager().findFragmentById(R.id.block_fragment);
-
-        AdapterView.OnItemClickListener mMessageClickedHandler = new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView parent, View v, int position, long id) {
-                Block block = (Block) parent.getItemAtPosition(position);
-                blockProperties.setBlock(block);
-            }
-        };
-        blocksView.setOnItemClickListener(mMessageClickedHandler);
 
         blocks.connect(device);
     }

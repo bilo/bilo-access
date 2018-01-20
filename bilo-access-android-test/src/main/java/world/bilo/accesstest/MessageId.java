@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.stackdemo;
+package world.bilo.accesstest;
 
 public class MessageId {
     public static final int REQUEST_ENABLE_BT = 1;

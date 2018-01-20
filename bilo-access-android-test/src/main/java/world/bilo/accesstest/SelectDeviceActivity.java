@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.stackdemo;
+package world.bilo.accesstest;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -16,9 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import world.bilo.stackdemo.R;
-
-import world.bilo.stackdemo.bluetooth.Devices;
+import world.bilo.accesstest.bluetooth.Devices;
 
 import java.util.List;
 

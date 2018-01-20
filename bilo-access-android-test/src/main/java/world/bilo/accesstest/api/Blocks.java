@@ -3,21 +3,21 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.stackdemo.api;
+package world.bilo.accesstest.api;
 
 import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 
-import com.bloctesian.Block;
-import com.bloctesian.Logger;
-import com.bloctesian.Timer;
-import world.bilo.stackdemo.DisconnectHandler;
-import world.bilo.stackdemo.bluetooth.Supervisor;
-import com.bloctesian.stream.Stream;
-import com.bloctesian.stream.StreamBlocks;
-import com.bloctesian.support.JavaTime;
-import com.bloctesian.support.PollTimer;
-import com.bloctesian.utility.ObservableCollection;
+import world.bilo.accesstest.DisconnectHandler;
+import world.bilo.accesstest.bluetooth.Supervisor;
+import world.bilo.stack.Block;
+import world.bilo.stack.Logger;
+import world.bilo.stack.Timer;
+import world.bilo.stack.stream.Stream;
+import world.bilo.stack.stream.StreamBlocks;
+import world.bilo.stack.support.JavaTime;
+import world.bilo.stack.support.PollTimer;
+import world.bilo.stack.utility.ObservableCollection;
 
 import java.util.List;
 
