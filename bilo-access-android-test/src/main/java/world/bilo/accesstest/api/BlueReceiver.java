@@ -24,17 +24,19 @@ public class BlueReceiver extends Handler {
 
     @Override
     public void handleMessage(Message msg) {
-        switch (msg.what) {
-            case MessageId.DEVICE_CONNECTED: {
+        MessageId id = MessageId.values()[msg.what];
+
+        switch (id) {
+            case DEVICE_CONNECTED: {
                 blocks.start();
                 break;
             }
-            case MessageId.DEVICE_DISCONNECTED: {
+            case DEVICE_DISCONNECTED: {
                 blocks.stop();
                 disconnectHandler.disconnected();
                 break;
             }
-            case MessageId.DATA_RECEIVED: {
+            case DATA_RECEIVED: {
                 List<Byte> data = (List<Byte>) msg.obj;
                 blocks.newData(data);
                 break;

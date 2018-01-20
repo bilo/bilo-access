@@ -7,6 +7,7 @@ package world.bilo.accesstest;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -16,12 +17,15 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import world.bilo.accesstest.bluetooth.Devices;
-
 import java.util.List;
 
-public class SelectDeviceActivity extends AppCompatActivity {
+import world.bilo.accesstest.api.Blocks;
+import world.bilo.accesstest.bluetooth.Devices;
+
+public class SelectDeviceActivity extends AppCompatActivity implements DisconnectHandler {
     private final android.content.Context thisContext = this;
+    private ArrayAdapter<String> logAdapter = null;
+    final private Blocks blocks = new Blocks(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +34,19 @@ public class SelectDeviceActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        logAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
+        ListView listView = (ListView) findViewById(R.id.connection_log);
+        listView.setAdapter(logAdapter);
+
         enableBluetooth();
+    }
+
+    private void logOutput(String message) {
+        logAdapter.insert(message, 0);
+    }
+
+    private void logInput(String message) {
+        logAdapter.insert(message, 0);
     }
 
     @Override
@@ -41,13 +57,21 @@ public class SelectDeviceActivity extends AppCompatActivity {
 
     private void enableBluetooth() {
         Intent intentBtEnabled = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(intentBtEnabled, MessageId.REQUEST_ENABLE_BT);
+        MessageId code = MessageId.REQUEST_ENABLE_BT;
+
+        logOutput("start activity: " + code + ", " + intentBtEnabled);
+
+        startActivityForResult(intentBtEnabled, code.ordinal());
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case MessageId.REQUEST_ENABLE_BT: {
+        MessageId code = MessageId.values()[requestCode];
+
+        logInput("activity result: " + code + " = " + resultCode);
+
+        switch (code) {
+            case REQUEST_ENABLE_BT: {
                 if (resultCode == Activity.RESULT_OK) {
                     updateListWithPairedDevices();
                 }
@@ -67,10 +91,16 @@ public class SelectDeviceActivity extends AppCompatActivity {
 
         AdapterView.OnItemClickListener mMessageClickedHandler = new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView parent, View v, int position, long id) {
-                Intent intent = new Intent(thisContext, DeviceViewActivity.class);
                 DeviceEntry device = (DeviceEntry) parent.getItemAtPosition(position);
-                intent.putExtra("address", device.address);
-                startActivity(intent);
+
+                logOutput("connect to " + device.address);
+
+                BluetoothDevice bdevice = Devices.find(device.address);
+                if (bdevice == null) {
+                    disconnected();
+                }
+
+                blocks.connect(bdevice);
             }
         };
 
@@ -78,4 +108,8 @@ public class SelectDeviceActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void disconnected() {
+        logInput("disconnected");
+    }
 }

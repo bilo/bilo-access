@@ -20,14 +20,14 @@ public class WorkHandler {
 
 
     public void write(List<Byte> data) {
-        mHandler.obtainMessage(MessageId.DATA_RECEIVED, data).sendToTarget();
+        mHandler.obtainMessage(MessageId.DATA_RECEIVED.ordinal(), data).sendToTarget();
     }
 
     public void connected() {
-        mHandler.obtainMessage(MessageId.DEVICE_CONNECTED).sendToTarget();
+        mHandler.obtainMessage(MessageId.DEVICE_CONNECTED.ordinal()).sendToTarget();
     }
 
     public void disconnected() {
-        mHandler.obtainMessage(MessageId.DEVICE_DISCONNECTED).sendToTarget();
+        mHandler.obtainMessage(MessageId.DEVICE_DISCONNECTED.ordinal()).sendToTarget();
     }
 }
