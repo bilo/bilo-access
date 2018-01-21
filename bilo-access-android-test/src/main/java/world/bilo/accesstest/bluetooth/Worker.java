@@ -30,7 +30,6 @@ public class Worker extends Thread implements QueueHandler<Event> {
     private BluetoothSocket socket;
     private Receiver receiver;
     private Sender sender;
-    private ConcurrentLinkedQueue<byte[]> sendQueue;
 
     public Worker(Logger logger, WorkHandler dataListener, BluetoothDevice device) {
         this.logger = logger;
@@ -54,11 +53,10 @@ public class Worker extends Thread implements QueueHandler<Event> {
             return;
         }
 
-        RecvHdl handler = new RecvHdl(queueSender);
+        RecvHdl handler = new RecvHdl(getQueue());
         receiver = new Receiver(inStream, handler);
 
-        sendQueue = new ConcurrentLinkedQueue<>();
-        sender = new Sender(sendQueue, getOutputStream(socket), handler);
+        sender = new Sender(getOutputStream(socket), handler);
 
         receiver.start();
         sender.start();
@@ -107,8 +105,7 @@ public class Worker extends Thread implements QueueHandler<Event> {
     }
 
     public void write(List<Byte> data) {
-        sendQueue.offer(listToArray(data));
-        sender.interrupt();
+        sender.getQueue().send(listToArray(data));
     }
 
     public void cancel() {
