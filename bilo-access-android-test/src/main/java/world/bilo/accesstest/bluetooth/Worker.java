@@ -14,109 +14,11 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import world.bilo.stack.Logger;
-
-interface ReceiverHandler {
-    void error(String message);
-
-    void received(byte[] data);
-}
-
-interface SenderHandler {
-    void error(String message);
-}
-
-class RecvHdl implements ReceiverHandler, SenderHandler {
-    private final ConcurrentLinkedQueue<Event> toWorker;
-    private final Thread worker;
-
-    public RecvHdl(ConcurrentLinkedQueue<Event> toWorker, Thread worker) {
-        this.toWorker = toWorker;
-        this.worker = worker;
-    }
-
-    @Override
-    public void error(String message) {
-        send(new Error(message));
-    }
-
-    @Override
-    public void received(byte[] data) {
-        send(new Received(data));
-    }
-
-    private void send(Event event) {
-        toWorker.offer(event);
-        worker.interrupt();
-    }
-
-}
-
-class Receiver extends Thread {
-    private final InputStream inStream;
-    private final ReceiverHandler handler;
-
-    public Receiver(InputStream inStream, ReceiverHandler handler) {
-        this.inStream = inStream;
-        this.handler = handler;
-    }
-
-    public void run() {
-        while (true) {
-            try {
-                byte[] buffer = new byte[1024];
-                int bytes;
-                bytes = inStream.read(buffer);
-                buffer = Arrays.copyOf(buffer, bytes);
-                handler.received(buffer);
-            } catch (IOException e) {
-                handler.error(e.getMessage());
-                break;
-            }
-        }
-    }
-}
-
-
-class Sender extends Thread {
-    private final ConcurrentLinkedQueue<byte[]> incoming;
-    private final OutputStream stream;
-    private final SenderHandler handler;
-
-    public Sender(ConcurrentLinkedQueue<byte[]> incoming, OutputStream stream, SenderHandler handler) {
-        this.incoming = incoming;
-        this.stream = stream;
-        this.handler = handler;
-    }
-
-    public void run() {
-        while (true) {
-            try {
-                Thread.sleep(60000);
-            } catch (InterruptedException e) {
-                try {
-                    sendFromQueue();
-                } catch (IOException e1) {
-                    handler.error(e1.getMessage());
-                    break;
-                }
-            }
-        }
-    }
-
-    private void sendFromQueue() throws IOException {
-        while (!incoming.isEmpty()) {
-            byte[] data = incoming.poll();
-            stream.write(data);
-        }
-        stream.flush();
-    }
-}
 
 
 public class Worker extends Thread {
