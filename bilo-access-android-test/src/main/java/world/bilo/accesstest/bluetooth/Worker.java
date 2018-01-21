@@ -20,13 +20,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import world.bilo.stack.Logger;
 
-
-public class Worker extends Thread {
+public class Worker extends Thread implements QueueHandler<Event> {
     private final Logger logger;
     private final WorkHandler dataListener;
     private final BluetoothDevice device;
     private final ConcurrentLinkedQueue<Event> incoming = new ConcurrentLinkedQueue<>();
     private final QueueSender<Event> queueSender = new QueueSender<>(incoming, this);
+    private final QueueReceiver<Event> queueReceiver = new QueueReceiver<>(incoming, this);
     private BluetoothSocket socket;
     private Receiver receiver;
     private Sender sender;
@@ -58,10 +58,10 @@ public class Worker extends Thread {
         receiver = new Receiver(inStream, handler);
 
         sendQueue = new ConcurrentLinkedQueue<>();
-        this.sender = new Sender(sendQueue, getOutputStream(socket), handler);
+        sender = new Sender(sendQueue, getOutputStream(socket), handler);
 
         receiver.start();
-        this.sender.start();
+        sender.start();
 
         ///////////////////////////////////////
 
@@ -72,27 +72,18 @@ public class Worker extends Thread {
 
 
         while (socket.isConnected()) {
-            try {
-                Thread.sleep(60000);
-            } catch (InterruptedException e) {
-                while (!incoming.isEmpty()) {
-                    Event event = incoming.poll();
-                    if (event instanceof Disconnect) {
-                        cancel();
-                    } else if (event instanceof Received) {
-                        Received received = (Received) event;
-                        dataListener.write(arrayToList(received.getData()));
-                    } else if (event instanceof Error) {
-                        cancel();
-                    }
-                }
-            }
+            queueReceiver.handle();
         }
 
         ///////////////////////////////////////
 
         try {
-            this.sender.join();
+            sender.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
             receiver.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -101,6 +92,18 @@ public class Worker extends Thread {
         logger.debug("bluetooth disconnecting");
 
         dataListener.disconnected();
+    }
+
+    @Override
+    public void handle(Event event) {
+        if (event instanceof Disconnect) {
+            cancel();
+        } else if (event instanceof Received) {
+            Received received = (Received) event;
+            dataListener.write(arrayToList(received.getData()));
+        } else if (event instanceof Error) {
+            cancel();
+        }
     }
 
     public void write(List<Byte> data) {
