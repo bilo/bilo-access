@@ -36,6 +36,10 @@ public class BlueReceiver extends Handler {
                 disconnectHandler.disconnected();
                 break;
             }
+            case DEVICE_CONNECTING: {
+                disconnectHandler.connecting((String)msg.obj);
+                break;
+            }
             case DATA_RECEIVED: {
                 List<Byte> data = (List<Byte>) msg.obj;
                 blocks.newData(data);

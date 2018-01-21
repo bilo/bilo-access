@@ -10,4 +10,5 @@ public enum MessageId {
     DEVICE_CONNECTED,
     DEVICE_DISCONNECTED,
     DATA_RECEIVED,
+    DEVICE_CONNECTING,
 }

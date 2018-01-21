@@ -30,4 +30,8 @@ public class WorkHandler {
     public void disconnected() {
         mHandler.obtainMessage(MessageId.DEVICE_DISCONNECTED.ordinal()).sendToTarget();
     }
+
+    public void connecting(String message) {
+        mHandler.obtainMessage(MessageId.DEVICE_CONNECTING.ordinal(), message).sendToTarget();
+    }
 }

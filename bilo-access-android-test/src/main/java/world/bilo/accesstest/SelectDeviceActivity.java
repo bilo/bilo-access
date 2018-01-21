@@ -15,6 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
 import java.util.List;
@@ -31,12 +32,22 @@ public class SelectDeviceActivity extends AppCompatActivity implements Disconnec
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.select_device_activity);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         logAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
-        ListView listView = (ListView) findViewById(R.id.connection_log);
+        ListView listView = findViewById(R.id.connection_log);
         listView.setAdapter(logAdapter);
+
+        Button disconnectButton = findViewById(R.id.disconnect);
+        disconnectButton.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        blocks.disconnect();
+                    }
+                }
+        );
 
         enableBluetooth();
     }
@@ -111,5 +122,10 @@ public class SelectDeviceActivity extends AppCompatActivity implements Disconnec
     @Override
     public void disconnected() {
         logInput("disconnected");
+    }
+
+    @Override
+    public void connecting(String message) {
+        logInput("connecting: " + message);
     }
 }

@@ -8,8 +8,6 @@ package world.bilo.accesstest.bluetooth;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 
-import world.bilo.stack.Logger;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,44 +17,126 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import world.bilo.stack.Logger;
+
+interface ReceiverHandler {
+    void error(String message);
+    void received(byte[] data);
+}
+
+class RecvHdl implements ReceiverHandler {
+    private final WorkHandler dataListener;
+
+    public RecvHdl(WorkHandler dataListener) {
+        this.dataListener = dataListener;
+    }
+
+    @Override
+    public void error(String message) {
+
+    }
+
+    @Override
+    public void received(byte[] data) {
+        dataListener.write(arrayToList(data));
+    }
+
+    private ArrayList<Byte> arrayToList(byte[] message) {
+        ArrayList<Byte> im = new ArrayList<Byte>();
+        for (byte symbol : message) {
+            im.add(symbol);
+        }
+        return im;
+    }
+}
+
+class Receiver extends Thread {
+    private final InputStream inStream;
+    private final ReceiverHandler handler;
+
+    public Receiver(InputStream inStream, ReceiverHandler handler) {
+        this.inStream = inStream;
+        this.handler = handler;
+    }
+
+    public void run() {
+        while (true) {
+            try {
+                byte[] buffer = new byte[1024];
+                int bytes;
+                bytes = inStream.read(buffer);
+                buffer = Arrays.copyOf(buffer, bytes);
+                handler.received(buffer);
+            } catch (IOException e) {
+                handler.error(e.getMessage());
+                break;
+            }
+        }
+    }
+
+}
 
 public class Worker extends Thread {
     private final Logger logger;
     private final WorkHandler dataListener;
-    private final BluetoothSocket socket;
-    private final InputStream inStream;
-    private final OutputStream outStream;
-    private boolean connected = false;
+    private final BluetoothDevice device;
+    private final ConcurrentLinkedQueue<Event> incoming;
+    private BluetoothSocket socket;
+    private OutputStream outStream;
+    private Receiver receiver;
 
-    public Worker(Logger logger, WorkHandler dataListener, BluetoothDevice device) {
+    public Worker(Logger logger, WorkHandler dataListener, BluetoothDevice device, ConcurrentLinkedQueue<Event> incoming) {
         this.logger = logger;
         this.dataListener = dataListener;
-
-        socket = getBluetoothSocket(device);
-        inStream = getInputStream(socket);
-        outStream = getOutputStream(socket);
+        this.device = device;
+        this.incoming = incoming;
     }
 
     public void run() {
-        connected = false;
+        dataListener.connecting("connection started");
+
+        socket = getBluetoothSocket(device);
+        InputStream inStream = getInputStream(socket);
+        outStream = getOutputStream(socket);
 
         logger.debug("bluetooth connection started");
         setName("ConnectThread");
 
         if (!connect()) {
+            dataListener.connecting("connection failed");
             logger.debug("bluetooth connection failed");
             dataListener.disconnected();
             return;
         }
 
-        connected = true;
+        dataListener.connecting("connected");
         dataListener.connected();
 
         logger.debug("bluetooth connected");
 
-        // Keep listening to the InputStream while connected
-        while (connected) {
-            read();
+        RecvHdl handler = new RecvHdl(dataListener);
+        receiver = new Receiver(inStream, handler);
+        receiver.start();
+
+        while (socket.isConnected()) {
+            try {
+                Thread.sleep(60000);
+            } catch (InterruptedException e) {
+                while (!incoming.isEmpty()) {
+                    Event event = incoming.poll();
+                    if (event == Event.Disconnect) {
+                        cancel();
+                    }
+                }
+            }
+        }
+
+        try {
+            receiver.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         logger.debug("bluetooth disconnecting");
@@ -64,35 +144,18 @@ public class Worker extends Thread {
         dataListener.disconnected();
     }
 
-    private void read() {
-        try {
-            byte[] buffer = new byte[1024];
-            int bytes;
-            bytes = inStream.read(buffer);
-            buffer = Arrays.copyOf(buffer, bytes);
-            dataListener.write(arrayToList(buffer));
-        } catch (IOException e) {
-            if (connected) {
-                logger.error("bluetooth read error");
-            }
-            cancel();
-        }
-    }
-
     public void write(List<Byte> data) {
         try {
             outStream.write(listToArray(data));
         } catch (IOException e) {
-            if (connected) {
-                logger.error("bluetooth write error");
-            }
+            logger.error("bluetooth write error");
             cancel();
         }
     }
 
     public void cancel() {
         logger.debug("canceling bluetooth connection");
-        connected = false;
+
         try {
             socket.close();
         } catch (IOException e) {
@@ -123,33 +186,46 @@ public class Worker extends Thread {
     private BluetoothSocket getBluetoothSocket(BluetoothDevice device) {
         UUID sppUuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
         try {
+            dataListener.connecting("try createInsecureRfcommSocketToServiceRecord");
             BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(sppUuid);
             logger.debug("created insecure socket with spp uuid");
+            dataListener.connecting("ok createInsecureRfcommSocketToServiceRecord");
             return socket;
         } catch (IOException e) {
+            dataListener.connecting("failed createInsecureRfcommSocketToServiceRecord");
             logger.error("bluetooth createInsecureRfcommSocketToServiceRecord failed");
         }
 
         try {
+            dataListener.connecting("try createRfcommSocketToServiceRecord");
             BluetoothSocket socket = device.createRfcommSocketToServiceRecord(sppUuid);
             logger.debug("created secure socket with spp uuid");
+            dataListener.connecting("ok createRfcommSocketToServiceRecord");
             return socket;
         } catch (IOException e) {
+            dataListener.connecting("failed createRfcommSocketToServiceRecord");
             logger.error("bluetooth createRfcommSocketToServiceRecord failed");
         }
 
         try {
+            dataListener.connecting("try createRfcommSocket");
             Method m = device.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
             BluetoothSocket socket = (BluetoothSocket) m.invoke(device, 1);
             logger.debug("created rfcomm socket with reflection");
+            dataListener.connecting("ok createRfcommSocket");
             return socket;
         } catch (NoSuchMethodException e) {
+            dataListener.connecting("failed createRfcommSocket");
             logger.error("bluetooth getMethod(createRfcommSocket) failed with " + e.getMessage());
         } catch (IllegalAccessException e) {
+            dataListener.connecting("failed createRfcommSocket");
             logger.error("bluetooth getMethod(invoke) failed with " + e.getMessage());
         } catch (InvocationTargetException e) {
+            dataListener.connecting("failed createRfcommSocket");
             logger.error("bluetooth getMethod(invoke) failed with " + e.getMessage());
         }
+
+        dataListener.connecting("no method to get bluetooth socket worked");
 
         throw new RuntimeException("Could not get bluetooth socket");
     }
@@ -170,14 +246,6 @@ public class Worker extends Thread {
             }
             return false;
         }
-    }
-
-    private ArrayList<Byte> arrayToList(byte[] message) {
-        ArrayList<Byte> im = new ArrayList<Byte>();
-        for (byte symbol : message) {
-            im.add(symbol);
-        }
-        return im;
     }
 
     private byte[] listToArray(List<Byte> data) {
