@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.accesstest.bluetooth;
+package world.bilo.accesstest.queue;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-class QueueSender<T> {
+public class QueueSender<T> {
     private final ConcurrentLinkedQueue<T> queue;
     private final Thread thread;
 

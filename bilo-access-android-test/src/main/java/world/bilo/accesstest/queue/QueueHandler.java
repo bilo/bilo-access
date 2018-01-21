@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.accesstest.bluetooth;
+package world.bilo.accesstest.queue;
 
-interface QueueHandler<T> {
+public interface QueueHandler<T> {
     void handle(T message);
 }

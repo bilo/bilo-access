@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import world.bilo.accesstest.queue.QueueHandler;
+import world.bilo.accesstest.queue.QueueReceiver;
+import world.bilo.accesstest.queue.QueueSender;
+
 class Sender extends Thread implements QueueHandler<byte[]> {
     private final ConcurrentLinkedQueue<byte[]> incoming = new ConcurrentLinkedQueue<>();
     private final QueueReceiver<byte[]> queueReceiver = new QueueReceiver<>(incoming, this);

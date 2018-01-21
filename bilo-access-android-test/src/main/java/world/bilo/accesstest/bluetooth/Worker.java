@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import world.bilo.accesstest.queue.QueueHandler;
+import world.bilo.accesstest.queue.QueueReceiver;
+import world.bilo.accesstest.queue.QueueSender;
 import world.bilo.stack.Logger;
 
 public class Worker extends Thread implements QueueHandler<Event> {
