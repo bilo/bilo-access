@@ -23,33 +23,34 @@ import world.bilo.stack.Logger;
 
 interface ReceiverHandler {
     void error(String message);
+
     void received(byte[] data);
 }
 
 class RecvHdl implements ReceiverHandler {
-    private final WorkHandler dataListener;
+    private final ConcurrentLinkedQueue<Event> toWorker;
+    private final Thread worker;
 
-    public RecvHdl(WorkHandler dataListener) {
-        this.dataListener = dataListener;
+    public RecvHdl(ConcurrentLinkedQueue<Event> toWorker, Thread worker) {
+        this.toWorker = toWorker;
+        this.worker = worker;
     }
 
     @Override
     public void error(String message) {
-
+        send(new Error(message));
     }
 
     @Override
     public void received(byte[] data) {
-        dataListener.write(arrayToList(data));
+        send(new Received(data));
     }
 
-    private ArrayList<Byte> arrayToList(byte[] message) {
-        ArrayList<Byte> im = new ArrayList<Byte>();
-        for (byte symbol : message) {
-            im.add(symbol);
-        }
-        return im;
+    private void send(Event event) {
+        toWorker.offer(event);
+        worker.interrupt();
     }
+
 }
 
 class Receiver extends Thread {
@@ -116,7 +117,7 @@ public class Worker extends Thread {
 
         logger.debug("bluetooth connected");
 
-        RecvHdl handler = new RecvHdl(dataListener);
+        RecvHdl handler = new RecvHdl(incoming, this);
         receiver = new Receiver(inStream, handler);
         receiver.start();
 
@@ -126,7 +127,12 @@ public class Worker extends Thread {
             } catch (InterruptedException e) {
                 while (!incoming.isEmpty()) {
                     Event event = incoming.poll();
-                    if (event.equals(Disconnect.Instance)) {
+                    if (event instanceof Disconnect) {
+                        cancel();
+                    } else if (event instanceof Received) {
+                        Received received = (Received) event;
+                        dataListener.write(arrayToList(received.getData()));
+                    } else if(event instanceof Error) {
                         cancel();
                     }
                 }
@@ -254,6 +260,14 @@ public class Worker extends Thread {
             message[i] = data.get(i);
         }
         return message;
+    }
+
+    private ArrayList<Byte> arrayToList(byte[] message) {
+        ArrayList<Byte> im = new ArrayList<Byte>();
+        for (byte symbol : message) {
+            im.add(symbol);
+        }
+        return im;
     }
 
 }
