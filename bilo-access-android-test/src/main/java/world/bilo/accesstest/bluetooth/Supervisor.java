@@ -35,7 +35,7 @@ public class Supervisor {
         if (worker != null) {
 
 //            worker.cancel();
-            toWorker.offer(Event.Disconnect);
+            toWorker.offer(Disconnect.Instance);
             worker.interrupt();
 
             try {

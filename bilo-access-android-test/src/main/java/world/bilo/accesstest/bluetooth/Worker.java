@@ -126,7 +126,7 @@ public class Worker extends Thread {
             } catch (InterruptedException e) {
                 while (!incoming.isEmpty()) {
                     Event event = incoming.poll();
-                    if (event == Event.Disconnect) {
+                    if (event.equals(Disconnect.Instance)) {
                         cancel();
                     }
                 }
