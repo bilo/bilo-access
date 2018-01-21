@@ -25,17 +25,17 @@ public class Worker extends Thread {
     private final Logger logger;
     private final WorkHandler dataListener;
     private final BluetoothDevice device;
-    private final ConcurrentLinkedQueue<Event> incoming;
+    private final ConcurrentLinkedQueue<Event> incoming = new ConcurrentLinkedQueue<>();
+    private final QueueSender<Event> queueSender = new QueueSender<>(incoming, this);
     private BluetoothSocket socket;
     private Receiver receiver;
     private Sender sender;
     private ConcurrentLinkedQueue<byte[]> sendQueue;
 
-    public Worker(Logger logger, WorkHandler dataListener, BluetoothDevice device, ConcurrentLinkedQueue<Event> incoming) {
+    public Worker(Logger logger, WorkHandler dataListener, BluetoothDevice device) {
         this.logger = logger;
         this.dataListener = dataListener;
         this.device = device;
-        this.incoming = incoming;
     }
 
     public void run() {
@@ -54,14 +54,14 @@ public class Worker extends Thread {
             return;
         }
 
-        RecvHdl handler = new RecvHdl(incoming, this);
+        RecvHdl handler = new RecvHdl(queueSender);
         receiver = new Receiver(inStream, handler);
 
         sendQueue = new ConcurrentLinkedQueue<>();
-        sender = new Sender(sendQueue, getOutputStream(socket), handler);
+        this.sender = new Sender(sendQueue, getOutputStream(socket), handler);
 
         receiver.start();
-        sender.start();
+        this.sender.start();
 
         ///////////////////////////////////////
 
@@ -92,7 +92,7 @@ public class Worker extends Thread {
         ///////////////////////////////////////
 
         try {
-            sender.join();
+            this.sender.join();
             receiver.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -217,6 +217,10 @@ public class Worker extends Thread {
             im.add(symbol);
         }
         return im;
+    }
+
+    public QueueSender<Event> getQueue() {
+        return queueSender;
     }
 
 }

@@ -9,27 +9,24 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Deprecated
 class RecvHdl implements ReceiverHandler, SenderHandler {
-    private final ConcurrentLinkedQueue<Event> toWorker;
-    private final Thread worker;
+    private final QueueSender<Event> sender;
+
+    public RecvHdl(QueueSender<Event> sender) {
+        this.sender = sender;
+    }
 
     public RecvHdl(ConcurrentLinkedQueue<Event> toWorker, Thread worker) {
-        this.toWorker = toWorker;
-        this.worker = worker;
+        sender = new QueueSender<>(toWorker, worker);
     }
 
     @Override
     public void error(String message) {
-        send(new Error(message));
+        sender.send(new Error(message));
     }
 
     @Override
     public void received(byte[] data) {
-        send(new Received(data));
-    }
-
-    private void send(Event event) {
-        toWorker.offer(event);
-        worker.interrupt();
+        sender.send(new Received(data));
     }
 
 }
