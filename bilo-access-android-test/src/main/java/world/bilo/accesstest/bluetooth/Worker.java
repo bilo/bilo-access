@@ -27,7 +27,11 @@ interface ReceiverHandler {
     void received(byte[] data);
 }
 
-class RecvHdl implements ReceiverHandler {
+interface SenderHandler {
+    void error(String message);
+}
+
+class RecvHdl implements ReceiverHandler, SenderHandler {
     private final ConcurrentLinkedQueue<Event> toWorker;
     private final Thread worker;
 
@@ -76,8 +80,44 @@ class Receiver extends Thread {
             }
         }
     }
-
 }
+
+
+class Sender extends Thread {
+    private final ConcurrentLinkedQueue<byte[]> incoming;
+    private final OutputStream stream;
+    private final SenderHandler handler;
+
+    public Sender(ConcurrentLinkedQueue<byte[]> incoming, OutputStream stream, SenderHandler handler) {
+        this.incoming = incoming;
+        this.stream = stream;
+        this.handler = handler;
+    }
+
+    public void run() {
+        while (true) {
+            try {
+                Thread.sleep(60000);
+            } catch (InterruptedException e) {
+                try {
+                    sendFromQueue();
+                } catch (IOException e1) {
+                    handler.error(e1.getMessage());
+                    break;
+                }
+            }
+        }
+    }
+
+    private void sendFromQueue() throws IOException {
+        while (!incoming.isEmpty()) {
+            byte[] data = incoming.poll();
+            stream.write(data);
+        }
+        stream.flush();
+    }
+}
+
 
 public class Worker extends Thread {
     private final Logger logger;
@@ -85,8 +125,9 @@ public class Worker extends Thread {
     private final BluetoothDevice device;
     private final ConcurrentLinkedQueue<Event> incoming;
     private BluetoothSocket socket;
-    private OutputStream outStream;
     private Receiver receiver;
+    private Sender sender;
+    private ConcurrentLinkedQueue<byte[]> sendQueue;
 
     public Worker(Logger logger, WorkHandler dataListener, BluetoothDevice device, ConcurrentLinkedQueue<Event> incoming) {
         this.logger = logger;
@@ -100,7 +141,6 @@ public class Worker extends Thread {
 
         socket = getBluetoothSocket(device);
         InputStream inStream = getInputStream(socket);
-        outStream = getOutputStream(socket);
 
         logger.debug("bluetooth connection started");
         setName("ConnectThread");
@@ -112,14 +152,22 @@ public class Worker extends Thread {
             return;
         }
 
+        RecvHdl handler = new RecvHdl(incoming, this);
+        receiver = new Receiver(inStream, handler);
+
+        sendQueue = new ConcurrentLinkedQueue<>();
+        sender = new Sender(sendQueue, getOutputStream(socket), handler);
+
+        receiver.start();
+        sender.start();
+
+        ///////////////////////////////////////
+
         dataListener.connecting("connected");
         dataListener.connected();
 
         logger.debug("bluetooth connected");
 
-        RecvHdl handler = new RecvHdl(incoming, this);
-        receiver = new Receiver(inStream, handler);
-        receiver.start();
 
         while (socket.isConnected()) {
             try {
@@ -132,14 +180,17 @@ public class Worker extends Thread {
                     } else if (event instanceof Received) {
                         Received received = (Received) event;
                         dataListener.write(arrayToList(received.getData()));
-                    } else if(event instanceof Error) {
+                    } else if (event instanceof Error) {
                         cancel();
                     }
                 }
             }
         }
 
+        ///////////////////////////////////////
+
         try {
+            sender.join();
             receiver.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -151,12 +202,8 @@ public class Worker extends Thread {
     }
 
     public void write(List<Byte> data) {
-        try {
-            outStream.write(listToArray(data));
-        } catch (IOException e) {
-            logger.error("bluetooth write error");
-            cancel();
-        }
+        sendQueue.offer(listToArray(data));
+        sender.interrupt();
     }
 
     public void cancel() {
