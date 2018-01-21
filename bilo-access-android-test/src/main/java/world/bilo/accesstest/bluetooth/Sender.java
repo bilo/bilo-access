@@ -7,16 +7,13 @@ package world.bilo.accesstest.bluetooth;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
+import world.bilo.accesstest.queue.Queue;
 import world.bilo.accesstest.queue.QueueHandler;
-import world.bilo.accesstest.queue.QueueReceiver;
 import world.bilo.accesstest.queue.QueueSender;
 
 class Sender extends Thread implements QueueHandler<byte[]> {
-    private final ConcurrentLinkedQueue<byte[]> incoming = new ConcurrentLinkedQueue<>();
-    private final QueueReceiver<byte[]> queueReceiver = new QueueReceiver<>(incoming, this);
-    private final QueueSender<byte[]> queueSender = new QueueSender<>(incoming, this);
+    private final Queue<byte[]> queue = new Queue<>(this, this);
     private final OutputStream stream;
     private final SenderHandler handler;
 
@@ -27,7 +24,7 @@ class Sender extends Thread implements QueueHandler<byte[]> {
 
     public void run() {
         while (true) {
-            queueReceiver.handle();
+            queue.getReceiver().handle();
         }
     }
 
@@ -41,6 +38,6 @@ class Sender extends Thread implements QueueHandler<byte[]> {
     }
 
     public QueueSender<byte[]> getQueue() {
-        return queueSender;
+        return queue.getSender();
     }
 }

@@ -9,7 +9,6 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import world.bilo.stack.Logger;
 

@@ -16,10 +16,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
+import world.bilo.accesstest.queue.Queue;
 import world.bilo.accesstest.queue.QueueHandler;
-import world.bilo.accesstest.queue.QueueReceiver;
 import world.bilo.accesstest.queue.QueueSender;
 import world.bilo.stack.Logger;
 
@@ -27,9 +26,7 @@ public class Worker extends Thread implements QueueHandler<Event> {
     private final Logger logger;
     private final WorkHandler dataListener;
     private final BluetoothDevice device;
-    private final ConcurrentLinkedQueue<Event> incoming = new ConcurrentLinkedQueue<>();
-    private final QueueSender<Event> queueSender = new QueueSender<>(incoming, this);
-    private final QueueReceiver<Event> queueReceiver = new QueueReceiver<>(incoming, this);
+    private final Queue<Event> queue = new Queue<>(this, this);
     private BluetoothSocket socket;
     private Receiver receiver;
     private Sender sender;
@@ -73,7 +70,7 @@ public class Worker extends Thread implements QueueHandler<Event> {
 
 
         while (socket.isConnected()) {
-            queueReceiver.handle();
+            queue.getReceiver().handle();
         }
 
         ///////////////////////////////////////
@@ -223,7 +220,7 @@ public class Worker extends Thread implements QueueHandler<Event> {
     }
 
     public QueueSender<Event> getQueue() {
-        return queueSender;
+        return queue.getSender();
     }
 
 }
