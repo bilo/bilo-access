@@ -5,20 +5,14 @@
 
 package world.bilo.accesstest.bluetooth;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import world.bilo.accesstest.queue.QueueSender;
+import world.bilo.accesstest.queue.MessageSender;
 
 @Deprecated
 class RecvHdl implements ReceiverHandler, SenderHandler {
-    private final QueueSender<Event> sender;
+    private final MessageSender<Event> sender;
 
-    public RecvHdl(QueueSender<Event> sender) {
+    public RecvHdl(MessageSender<Event> sender) {
         this.sender = sender;
-    }
-
-    public RecvHdl(ConcurrentLinkedQueue<Event> toWorker, Thread worker) {
-        sender = new QueueSender<>(toWorker, worker);
     }
 
     @Override

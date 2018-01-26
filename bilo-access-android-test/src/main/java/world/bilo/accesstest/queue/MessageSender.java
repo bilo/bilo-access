@@ -5,6 +5,6 @@
 
 package world.bilo.accesstest.queue;
 
-public interface QueueHandler<T> {
-    void handle(T message);
+public interface MessageSender<T> {
+    public void send(T message);
 }

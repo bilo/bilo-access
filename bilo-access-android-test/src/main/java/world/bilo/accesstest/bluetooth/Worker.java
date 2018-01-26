@@ -17,14 +17,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import world.bilo.accesstest.queue.Queue;
-import world.bilo.accesstest.queue.QueueHandler;
-import world.bilo.accesstest.queue.QueueSender;
+import world.bilo.accesstest.queue.MessageSender;
+import world.bilo.accesstest.queue.thread.ThreadQueue;
+import world.bilo.accesstest.queue.MessageHandler;
 
-class Worker extends Thread implements QueueHandler<Event> {
+class Worker extends Thread implements MessageHandler<Event> {
     private final Output dataListener;
     private final BluetoothDevice device;
-    private final Queue<Event> queue = new Queue<>(this, this);
+    private final ThreadQueue<Event> queue = new ThreadQueue<>(this, this);
     private BluetoothSocket socket;
     private Receiver receiver;
     private Sender sender;
@@ -194,7 +194,7 @@ class Worker extends Thread implements QueueHandler<Event> {
         return im;
     }
 
-    public QueueSender<Event> getQueue() {
+    public MessageSender<Event> getQueue() {
         return queue.getSender();
     }
 

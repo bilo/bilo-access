@@ -3,22 +3,22 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.accesstest.queue;
+package world.bilo.accesstest.queue.poll;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class QueueSender<T> {
-    private final ConcurrentLinkedQueue<T> queue;
-    private final Thread thread;
+import world.bilo.accesstest.queue.MessageSender;
 
-    public QueueSender(ConcurrentLinkedQueue<T> queue, Thread thread) {
+public class PollSender<T> implements MessageSender<T> {
+    private final ConcurrentLinkedQueue<T> queue;
+
+    public PollSender(ConcurrentLinkedQueue<T> queue) {
         this.queue = queue;
-        this.thread = thread;
     }
 
+    @Override
     public void send(T message) {
         queue.offer(message);
-        thread.interrupt();
     }
 
 }

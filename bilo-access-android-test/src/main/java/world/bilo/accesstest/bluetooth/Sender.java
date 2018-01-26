@@ -8,12 +8,12 @@ package world.bilo.accesstest.bluetooth;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import world.bilo.accesstest.queue.Queue;
-import world.bilo.accesstest.queue.QueueHandler;
-import world.bilo.accesstest.queue.QueueSender;
+import world.bilo.accesstest.queue.MessageSender;
+import world.bilo.accesstest.queue.thread.ThreadQueue;
+import world.bilo.accesstest.queue.MessageHandler;
 
-class Sender extends Thread implements QueueHandler<byte[]> {
-    private final Queue<byte[]> queue = new Queue<>(this, this);
+class Sender extends Thread implements MessageHandler<byte[]> {
+    private final ThreadQueue<byte[]> queue = new ThreadQueue<>(this, this);
     private final OutputStream stream;
     private final SenderHandler handler;
 
@@ -38,7 +38,7 @@ class Sender extends Thread implements QueueHandler<byte[]> {
         }
     }
 
-    public QueueSender<byte[]> getQueue() {
+    public MessageSender<byte[]> getQueue() {
         return queue.getSender();
     }
 }
