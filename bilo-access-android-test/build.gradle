@@ -38,7 +38,6 @@ android {
 }
 
 dependencies {
-    compile 'world.bilo:bilo-stack:1.0.0'
     implementation project(':bilo-access-android')
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.0', {

@@ -20,10 +20,8 @@ import java.util.UUID;
 import world.bilo.accesstest.queue.Queue;
 import world.bilo.accesstest.queue.QueueHandler;
 import world.bilo.accesstest.queue.QueueSender;
-import world.bilo.stack.Logger;
 
 public class Worker extends Thread implements QueueHandler<Event> {
-    private final Logger logger;
     private final WorkHandler dataListener;
     private final BluetoothDevice device;
     private final Queue<Event> queue = new Queue<>(this, this);
@@ -31,8 +29,7 @@ public class Worker extends Thread implements QueueHandler<Event> {
     private Receiver receiver;
     private Sender sender;
 
-    public Worker(Logger logger, WorkHandler dataListener, BluetoothDevice device) {
-        this.logger = logger;
+    public Worker(WorkHandler dataListener, BluetoothDevice device) {
         this.dataListener = dataListener;
         this.device = device;
     }
@@ -43,12 +40,10 @@ public class Worker extends Thread implements QueueHandler<Event> {
         socket = getBluetoothSocket(device);
         InputStream inStream = getInputStream(socket);
 
-        logger.debug("bluetooth connection started");
         setName("ConnectThread");
 
         if (!connect()) {
             dataListener.connecting("connection failed");
-            logger.debug("bluetooth connection failed");
             dataListener.disconnected();
             return;
         }
@@ -65,9 +60,6 @@ public class Worker extends Thread implements QueueHandler<Event> {
 
         dataListener.connecting("connected");
         dataListener.connected();
-
-        logger.debug("bluetooth connected");
-
 
         while (socket.isConnected()) {
             queue.getReceiver().handle();
@@ -86,8 +78,6 @@ public class Worker extends Thread implements QueueHandler<Event> {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        logger.debug("bluetooth disconnecting");
 
         dataListener.disconnected();
     }
@@ -109,12 +99,9 @@ public class Worker extends Thread implements QueueHandler<Event> {
     }
 
     public void cancel() {
-        logger.debug("canceling bluetooth connection");
-
         try {
             socket.close();
         } catch (IOException e) {
-            logger.error("bluetooth close() of connect socket failed");
         }
     }
 
@@ -122,7 +109,6 @@ public class Worker extends Thread implements QueueHandler<Event> {
         try {
             return socket.getInputStream();
         } catch (IOException e) {
-            logger.error("could not get bluetooth input stream");
         }
 
         throw new RuntimeException("could not get input stream");
@@ -132,7 +118,6 @@ public class Worker extends Thread implements QueueHandler<Event> {
         try {
             return socket.getOutputStream();
         } catch (IOException e) {
-            logger.error("could not get bluetooth output stream");
         }
 
         throw new RuntimeException("could not get output stream");
@@ -143,41 +128,33 @@ public class Worker extends Thread implements QueueHandler<Event> {
         try {
             dataListener.connecting("try createInsecureRfcommSocketToServiceRecord");
             BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(sppUuid);
-            logger.debug("created insecure socket with spp uuid");
             dataListener.connecting("ok createInsecureRfcommSocketToServiceRecord");
             return socket;
         } catch (IOException e) {
             dataListener.connecting("failed createInsecureRfcommSocketToServiceRecord");
-            logger.error("bluetooth createInsecureRfcommSocketToServiceRecord failed");
         }
 
         try {
             dataListener.connecting("try createRfcommSocketToServiceRecord");
             BluetoothSocket socket = device.createRfcommSocketToServiceRecord(sppUuid);
-            logger.debug("created secure socket with spp uuid");
             dataListener.connecting("ok createRfcommSocketToServiceRecord");
             return socket;
         } catch (IOException e) {
             dataListener.connecting("failed createRfcommSocketToServiceRecord");
-            logger.error("bluetooth createRfcommSocketToServiceRecord failed");
         }
 
         try {
             dataListener.connecting("try createRfcommSocket");
             Method m = device.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
             BluetoothSocket socket = (BluetoothSocket) m.invoke(device, 1);
-            logger.debug("created rfcomm socket with reflection");
             dataListener.connecting("ok createRfcommSocket");
             return socket;
         } catch (NoSuchMethodException e) {
             dataListener.connecting("failed createRfcommSocket");
-            logger.error("bluetooth getMethod(createRfcommSocket) failed with " + e.getMessage());
         } catch (IllegalAccessException e) {
             dataListener.connecting("failed createRfcommSocket");
-            logger.error("bluetooth getMethod(invoke) failed with " + e.getMessage());
         } catch (InvocationTargetException e) {
             dataListener.connecting("failed createRfcommSocket");
-            logger.error("bluetooth getMethod(invoke) failed with " + e.getMessage());
         }
 
         dataListener.connecting("no method to get bluetooth socket worked");
@@ -192,12 +169,10 @@ public class Worker extends Thread implements QueueHandler<Event> {
             socket.connect();
             return true;
         } catch (IOException e) {
-            logger.debug("bluetooth unable to connect (" + e.getMessage() + ")");
             // Close the socket
             try {
                 socket.close();
             } catch (IOException e2) {
-                logger.error("bluetooth unable to close() socket during connection failure");
             }
             return false;
         }

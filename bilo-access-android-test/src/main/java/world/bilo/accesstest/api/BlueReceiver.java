@@ -8,10 +8,10 @@ package world.bilo.accesstest.api;
 import android.os.Handler;
 import android.os.Message;
 
+import java.util.List;
+
 import world.bilo.accesstest.DisconnectHandler;
 import world.bilo.accesstest.MessageId;
-import world.bilo.stack.stream.StreamBlocks;
-import java.util.List;
 
 public class BlueReceiver extends Handler {
     private final DisconnectHandler disconnectHandler;
@@ -34,7 +34,7 @@ public class BlueReceiver extends Handler {
                 break;
             }
             case DEVICE_CONNECTING: {
-                disconnectHandler.connecting((String)msg.obj);
+                disconnectHandler.connecting((String) msg.obj);
                 break;
             }
             case DATA_RECEIVED: {

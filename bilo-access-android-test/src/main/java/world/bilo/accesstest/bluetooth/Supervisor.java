@@ -10,22 +10,18 @@ import android.os.Handler;
 
 import java.util.List;
 
-import world.bilo.stack.Logger;
-
 public class Supervisor {
     private final WorkHandler reader;
-    private final Logger logger;
     private Worker worker = null;
 
-    public Supervisor(Handler handler, Logger logger) {
+    public Supervisor(Handler handler) {
         reader = new WorkHandler(handler);
-        this.logger = logger;
     }
 
     synchronized public void connect(BluetoothDevice device) {
         assert (worker == null);
         reader.connecting("start connection");
-        worker = new Worker(logger, reader, device);
+        worker = new Worker(reader, device);
         worker.start();
     }
 
