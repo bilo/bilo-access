@@ -5,6 +5,6 @@
 
 package world.bilo.accesstest.bluetooth;
 
-public interface Event {
+interface Event {
 }
 

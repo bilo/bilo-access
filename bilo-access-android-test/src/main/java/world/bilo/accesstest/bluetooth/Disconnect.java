@@ -5,7 +5,7 @@
 
 package world.bilo.accesstest.bluetooth;
 
-public class Disconnect implements Event {
+class Disconnect implements Event {
     static public final Disconnect Instance = new Disconnect();
 
     @Override

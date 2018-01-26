@@ -19,7 +19,7 @@ public class Blocks {
 
     public Blocks(DisconnectHandler disconnectHandler) {
         handler = new BlueReceiver(disconnectHandler);
-        supervisor = new Supervisor(handler);
+        supervisor = new Supervisor(new WorkHandler(handler));
     }
 
     public void disconnect() {
@@ -31,6 +31,6 @@ public class Blocks {
     }
 
     public void send(List<Byte> data) {
-        supervisor.newData(data);
+        supervisor.send(data);
     }
 }

@@ -21,15 +21,15 @@ import world.bilo.accesstest.queue.Queue;
 import world.bilo.accesstest.queue.QueueHandler;
 import world.bilo.accesstest.queue.QueueSender;
 
-public class Worker extends Thread implements QueueHandler<Event> {
-    private final WorkHandler dataListener;
+class Worker extends Thread implements QueueHandler<Event> {
+    private final Output dataListener;
     private final BluetoothDevice device;
     private final Queue<Event> queue = new Queue<>(this, this);
     private BluetoothSocket socket;
     private Receiver receiver;
     private Sender sender;
 
-    public Worker(WorkHandler dataListener, BluetoothDevice device) {
+    public Worker(Output dataListener, BluetoothDevice device) {
         this.dataListener = dataListener;
         this.device = device;
     }
@@ -88,7 +88,7 @@ public class Worker extends Thread implements QueueHandler<Event> {
             cancel();
         } else if (event instanceof Received) {
             Received received = (Received) event;
-            dataListener.write(arrayToList(received.getData()));
+            dataListener.received(arrayToList(received.getData()));
         } else if (event instanceof Error) {
             cancel();
         }

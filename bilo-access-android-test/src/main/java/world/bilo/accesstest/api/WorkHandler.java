@@ -3,34 +3,38 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.accesstest.bluetooth;
+package world.bilo.accesstest.api;
 
 import android.os.Handler;
 
-import world.bilo.accesstest.MessageId;
-
 import java.util.List;
 
-public class WorkHandler {
+import world.bilo.accesstest.MessageId;
+import world.bilo.accesstest.bluetooth.Output;
+
+public class WorkHandler implements Output {
     private final Handler mHandler;
 
     public WorkHandler(Handler mHandler) {
         this.mHandler = mHandler;
     }
 
-
-    public void write(List<Byte> data) {
+    @Override
+    public void received(List<Byte> data) {
         mHandler.obtainMessage(MessageId.DATA_RECEIVED.ordinal(), data).sendToTarget();
     }
 
+    @Override
     public void connected() {
         mHandler.obtainMessage(MessageId.DEVICE_CONNECTED.ordinal()).sendToTarget();
     }
 
+    @Override
     public void disconnected() {
         mHandler.obtainMessage(MessageId.DEVICE_DISCONNECTED.ordinal()).sendToTarget();
     }
 
+    @Override
     public void connecting(String message) {
         mHandler.obtainMessage(MessageId.DEVICE_CONNECTING.ordinal(), message).sendToTarget();
     }

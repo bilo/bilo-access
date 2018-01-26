@@ -5,7 +5,7 @@
 
 package world.bilo.accesstest.bluetooth;
 
-public class Error implements Event {
+class Error implements Event {
     private final String message;
 
     public Error(String message) {

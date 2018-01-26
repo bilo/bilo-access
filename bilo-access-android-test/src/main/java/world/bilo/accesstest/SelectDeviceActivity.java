@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 
 import world.bilo.accesstest.api.Blocks;
-import world.bilo.accesstest.bluetooth.Devices;
 
 public class SelectDeviceActivity extends AppCompatActivity implements DisconnectHandler {
     private final android.content.Context thisContext = this;

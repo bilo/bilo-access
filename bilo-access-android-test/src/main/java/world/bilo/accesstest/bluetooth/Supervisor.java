@@ -6,26 +6,25 @@
 package world.bilo.accesstest.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
-import android.os.Handler;
 
 import java.util.List;
 
 public class Supervisor {
-    private final WorkHandler reader;
+    private final Output reader;
     private Worker worker = null;
 
-    public Supervisor(Handler handler) {
-        reader = new WorkHandler(handler);
+    public Supervisor(Output handler) {
+        reader = handler;
     }
 
-    synchronized public void connect(BluetoothDevice device) {
+    public void connect(BluetoothDevice device) {
         assert (worker == null);
         reader.connecting("start connection");
         worker = new Worker(reader, device);
         worker.start();
     }
 
-    synchronized public void disconnect() {
+    public void disconnect() {
         if (worker != null) {
 
             worker.getQueue().send(Disconnect.Instance);
@@ -40,10 +39,9 @@ public class Supervisor {
         }
     }
 
-    public void newData(List<Byte> data) {
-        Worker w = worker;
-        if (w != null) {
-            w.write(data);
+    public void send(List<Byte> data) {
+        if (worker != null) {
+            worker.write(data);
         }
     }
 
