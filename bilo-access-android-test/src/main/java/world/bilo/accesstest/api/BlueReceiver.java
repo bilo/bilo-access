@@ -14,11 +14,9 @@ import world.bilo.stack.stream.StreamBlocks;
 import java.util.List;
 
 public class BlueReceiver extends Handler {
-    private final StreamBlocks blocks;
     private final DisconnectHandler disconnectHandler;
 
-    public BlueReceiver(StreamBlocks blocks, DisconnectHandler disconnectHandler) {
-        this.blocks = blocks;
+    public BlueReceiver(DisconnectHandler disconnectHandler) {
         this.disconnectHandler = disconnectHandler;
     }
 
@@ -28,11 +26,10 @@ public class BlueReceiver extends Handler {
 
         switch (id) {
             case DEVICE_CONNECTED: {
-                blocks.start();
+                disconnectHandler.connected();
                 break;
             }
             case DEVICE_DISCONNECTED: {
-                blocks.stop();
                 disconnectHandler.disconnected();
                 break;
             }
@@ -42,7 +39,7 @@ public class BlueReceiver extends Handler {
             }
             case DATA_RECEIVED: {
                 List<Byte> data = (List<Byte>) msg.obj;
-                blocks.newData(data);
+                disconnectHandler.received(data);
                 break;
             }
         }

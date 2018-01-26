@@ -22,6 +22,7 @@ class Sender extends Thread implements QueueHandler<byte[]> {
         this.handler = handler;
     }
 
+    @Override
     public void run() {
         while (true) {
             queue.getReceiver().handle();

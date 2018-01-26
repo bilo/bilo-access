@@ -47,7 +47,6 @@ public class Supervisor {
     public void newData(List<Byte> data) {
         Worker w = worker;
         if (w != null) {
-            // Perform the write unsynchronized
             w.write(data);
         }
     }

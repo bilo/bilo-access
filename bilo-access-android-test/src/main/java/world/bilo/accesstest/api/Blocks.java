@@ -19,23 +19,16 @@ import world.bilo.stack.support.JavaTime;
 import world.bilo.stack.support.PollTimer;
 import world.bilo.stack.utility.ObservableCollection;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Blocks {
-    final private Stream output = new Stream() {
-        @Override
-        public void newData(List<Byte> data) {
-            supervisor.newData(data);
-        }
-    };
-    final private Timer timer = new PollTimer(new JavaTime());
     final private Logger logger = new AndroidLogger();
-    final private StreamBlocks blocks = new StreamBlocks(output, timer, logger);
     final private Handler handler;
     final private Supervisor supervisor;
 
     public Blocks(DisconnectHandler disconnectHandler) {
-        handler = new BlueReceiver(blocks, disconnectHandler);
+        handler = new BlueReceiver(disconnectHandler);
         supervisor = new Supervisor(handler, logger);
     }
 
@@ -47,12 +40,7 @@ public class Blocks {
         supervisor.connect(device);
     }
 
-    public ObservableCollection<Block> getBlocks() {
-        return blocks.getBlocks();
+    public void send(List<Byte> data) {
+        supervisor.newData(data);
     }
-
-    public Block getBase() {
-        return blocks.getBase();
-    }
-
 }

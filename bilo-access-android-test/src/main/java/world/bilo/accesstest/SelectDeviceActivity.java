@@ -18,6 +18,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import world.bilo.accesstest.api.Blocks;
@@ -38,6 +40,21 @@ public class SelectDeviceActivity extends AppCompatActivity implements Disconnec
         logAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         ListView listView = findViewById(R.id.connection_log);
         listView.setAdapter(logAdapter);
+
+        Button sendButton = findViewById(R.id.send);
+        sendButton.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        List<Byte> data = new ArrayList<>();
+                        data.add((byte) 0x80);
+                        data.add((byte) 0x81);
+
+                        logOutput("send: " + hexString(data));
+                        blocks.send(data);
+                    }
+                }
+        );
 
         Button disconnectButton = findViewById(R.id.disconnect);
         disconnectButton.setOnClickListener(
@@ -118,7 +135,6 @@ public class SelectDeviceActivity extends AppCompatActivity implements Disconnec
         listView.setOnItemClickListener(mMessageClickedHandler);
     }
 
-
     @Override
     public void disconnected() {
         logInput("disconnected");
@@ -127,5 +143,35 @@ public class SelectDeviceActivity extends AppCompatActivity implements Disconnec
     @Override
     public void connecting(String message) {
         logInput("connecting: " + message);
+    }
+
+    @Override
+    public void connected() {
+        logInput("connected");
+    }
+
+    @Override
+    public void received(List<Byte> data) {
+        logInput("received: " + hexString(data));
+    }
+
+    private String hexString(Collection<Byte> data) {
+        String result = "";
+        boolean first = true;
+        for (Byte itr : data) {
+            if (first) {
+                first = false;
+            } else {
+                result += " ";
+            }
+            result += hexString(itr);
+        }
+        return result;
+    }
+
+    private String hexString(Byte value) {
+        int upper = (value >> 4) & 0x0f;
+        int lower = (value >> 0) & 0x0f;
+        return Integer.toHexString(upper) + Integer.toHexString(lower);
     }
 }
