@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.accesstest.bluetooth;
+package world.bilo.accesstest.bluetooth.event;
 
 import java.util.Arrays;
 
-class Received implements Event {
+public class Received implements ToSupervisor {
     private final byte[] data;
 
     public Received(byte[] data) {

@@ -16,4 +16,5 @@ public interface Output {
 
     public void connecting(String message);
 
+    public void error(String message);
 }

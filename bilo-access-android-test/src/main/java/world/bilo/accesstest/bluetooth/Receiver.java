@@ -9,13 +9,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
+import world.bilo.accesstest.bluetooth.event.Error;
+import world.bilo.accesstest.bluetooth.event.Received;
+import world.bilo.accesstest.bluetooth.event.ToSupervisor;
+import world.bilo.accesstest.queue.MessageSender;
+
 class Receiver extends Thread {
     private final InputStream inStream;
-    private final ReceiverHandler handler;
+    private final MessageSender<ToSupervisor> toSupervisor;
 
-    public Receiver(InputStream inStream, ReceiverHandler handler) {
+    public Receiver(InputStream inStream, MessageSender<ToSupervisor> toSupervisor) {
         this.inStream = inStream;
-        this.handler = handler;
+        this.toSupervisor = toSupervisor;
     }
 
     public void run() {
@@ -25,9 +30,9 @@ class Receiver extends Thread {
                 int bytes;
                 bytes = inStream.read(buffer);
                 buffer = Arrays.copyOf(buffer, bytes);
-                handler.received(buffer);
+                toSupervisor.send(new Received(buffer));
             } catch (IOException e) {
-                handler.error(e.getMessage());
+                toSupervisor.send(new Error(e.getMessage()));
                 break;
             }
         }

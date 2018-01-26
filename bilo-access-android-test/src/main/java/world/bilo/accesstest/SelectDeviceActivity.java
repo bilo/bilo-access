@@ -22,12 +22,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import world.bilo.accesstest.api.Blocks;
+import world.bilo.accesstest.bluetooth.Output;
+import world.bilo.accesstest.bluetooth.Supervisor;
 
-public class SelectDeviceActivity extends AppCompatActivity implements DisconnectHandler {
-    private final android.content.Context thisContext = this;
+public class SelectDeviceActivity extends AppCompatActivity implements Output, TickHandler {
     private ArrayAdapter<String> logAdapter = null;
-    final private Blocks blocks = new Blocks(this);
+    final private Supervisor supervisor = new Supervisor(this);
+    final private Ticker ticker = new Ticker(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +51,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements Disconnec
                         data.add((byte) 0x81);
 
                         logOutput("send: " + hexString(data));
-                        blocks.send(data);
+                        supervisor.send(data);
                     }
                 }
         );
@@ -60,10 +61,13 @@ public class SelectDeviceActivity extends AppCompatActivity implements Disconnec
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        blocks.disconnect();
+                        supervisor.disconnect();
                     }
                 }
         );
+
+
+        ticker.start();
 
         enableBluetooth();
     }
@@ -82,6 +86,8 @@ public class SelectDeviceActivity extends AppCompatActivity implements Disconnec
         enableBluetooth();
     }
 
+    //FIXME do this in the library
+    //FIXME notify about available devices in response
     private void enableBluetooth() {
         Intent intentBtEnabled = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         MessageId code = MessageId.REQUEST_ENABLE_BT;
@@ -127,7 +133,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements Disconnec
                     disconnected();
                 }
 
-                blocks.connect(bdevice);
+                supervisor.connect(bdevice);
             }
         };
 
@@ -142,6 +148,11 @@ public class SelectDeviceActivity extends AppCompatActivity implements Disconnec
     @Override
     public void connecting(String message) {
         logInput("connecting: " + message);
+    }
+
+    @Override
+    public void error(String message) {
+        logInput("error: " + message);
     }
 
     @Override
@@ -173,4 +184,10 @@ public class SelectDeviceActivity extends AppCompatActivity implements Disconnec
         int lower = (value >> 0) & 0x0f;
         return Integer.toHexString(upper) + Integer.toHexString(lower);
     }
+
+    @Override
+    public void tick() {
+        supervisor.poll();
+    }
 }
+

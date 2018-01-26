@@ -5,7 +5,6 @@
 
 package world.bilo.accesstest;
 
-public enum MessageId {
-    REQUEST_ENABLE_BT,
-    TICK,
+interface TickHandler {
+    public void tick();
 }

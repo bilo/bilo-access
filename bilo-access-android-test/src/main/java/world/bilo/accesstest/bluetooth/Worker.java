@@ -13,29 +13,35 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
+import world.bilo.accesstest.bluetooth.event.Abort;
+import world.bilo.accesstest.bluetooth.event.Connected;
+import world.bilo.accesstest.bluetooth.event.Connecting;
+import world.bilo.accesstest.bluetooth.event.Disconnect;
+import world.bilo.accesstest.bluetooth.event.Disconnected;
+import world.bilo.accesstest.bluetooth.event.ToSender;
+import world.bilo.accesstest.bluetooth.event.ToSupervisor;
+import world.bilo.accesstest.bluetooth.event.ToWorker;
+import world.bilo.accesstest.queue.MessageHandler;
 import world.bilo.accesstest.queue.MessageSender;
 import world.bilo.accesstest.queue.thread.ThreadQueue;
-import world.bilo.accesstest.queue.MessageHandler;
 
-class Worker extends Thread implements MessageHandler<Event> {
-    private final Output dataListener;
+class Worker extends Thread implements MessageHandler<ToWorker> {
+    private final MessageSender<ToSupervisor> toSupervisor;
     private final BluetoothDevice device;
-    private final ThreadQueue<Event> queue = new ThreadQueue<>(this, this);
+    private final ThreadQueue<ToWorker> queue = new ThreadQueue<>(this, this);
     private BluetoothSocket socket;
     private Receiver receiver;
     private Sender sender;
 
-    public Worker(Output dataListener, BluetoothDevice device) {
-        this.dataListener = dataListener;
+    public Worker(MessageSender<ToSupervisor> toSupervisor, BluetoothDevice device) {
+        this.toSupervisor = toSupervisor;
         this.device = device;
     }
 
     public void run() {
-        dataListener.connecting("connection started");
+        toSupervisor.send(new Connecting("connection started"));
 
         socket = getBluetoothSocket(device);
         InputStream inStream = getInputStream(socket);
@@ -43,29 +49,29 @@ class Worker extends Thread implements MessageHandler<Event> {
         setName("ConnectThread");
 
         if (!connect()) {
-            dataListener.connecting("connection failed");
-            dataListener.disconnected();
+            toSupervisor.send(new Connecting("connection failed"));
+            toSupervisor.send(Disconnected.Instance);
             return;
         }
 
-        RecvHdl handler = new RecvHdl(getQueue());
-        receiver = new Receiver(inStream, handler);
-
-        sender = new Sender(getOutputStream(socket), handler);
+        receiver = new Receiver(inStream, toSupervisor);
+        sender = new Sender(getOutputStream(socket), toSupervisor);
 
         receiver.start();
         sender.start();
 
         ///////////////////////////////////////
 
-        dataListener.connecting("connected");
-        dataListener.connected();
+        toSupervisor.send(new Connecting("connected"));
+        toSupervisor.send(Connected.Instance);
 
         while (socket.isConnected()) {
             queue.getReceiver().handle();
         }
 
         ///////////////////////////////////////
+
+        sender.getQueue().send(Abort.Instance);
 
         try {
             sender.join();
@@ -79,23 +85,15 @@ class Worker extends Thread implements MessageHandler<Event> {
             e.printStackTrace();
         }
 
-        dataListener.disconnected();
+        toSupervisor.send(Disconnected.Instance);
     }
 
     @Override
-    public void handle(Event event) {
+    public void handle(ToWorker event) {
+        //FIXME use visitor pattern
         if (event instanceof Disconnect) {
             cancel();
-        } else if (event instanceof Received) {
-            Received received = (Received) event;
-            dataListener.received(arrayToList(received.getData()));
-        } else if (event instanceof Error) {
-            cancel();
         }
-    }
-
-    public void write(List<Byte> data) {
-        sender.getQueue().send(listToArray(data));
     }
 
     public void cancel() {
@@ -120,44 +118,44 @@ class Worker extends Thread implements MessageHandler<Event> {
         } catch (IOException e) {
         }
 
-        throw new RuntimeException("could not get output stream");
+        throw new RuntimeException("could not get toSupervisor stream");
     }
 
     private BluetoothSocket getBluetoothSocket(BluetoothDevice device) {
         UUID sppUuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
         try {
-            dataListener.connecting("try createInsecureRfcommSocketToServiceRecord");
+            toSupervisor.send(new Connecting("try createInsecureRfcommSocketToServiceRecord"));
             BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(sppUuid);
-            dataListener.connecting("ok createInsecureRfcommSocketToServiceRecord");
+            toSupervisor.send(new Connecting("ok createInsecureRfcommSocketToServiceRecord"));
             return socket;
         } catch (IOException e) {
-            dataListener.connecting("failed createInsecureRfcommSocketToServiceRecord");
+            toSupervisor.send(new Connecting("failed createInsecureRfcommSocketToServiceRecord"));
         }
 
         try {
-            dataListener.connecting("try createRfcommSocketToServiceRecord");
+            toSupervisor.send(new Connecting("try createRfcommSocketToServiceRecord"));
             BluetoothSocket socket = device.createRfcommSocketToServiceRecord(sppUuid);
-            dataListener.connecting("ok createRfcommSocketToServiceRecord");
+            toSupervisor.send(new Connecting("ok createRfcommSocketToServiceRecord"));
             return socket;
         } catch (IOException e) {
-            dataListener.connecting("failed createRfcommSocketToServiceRecord");
+            toSupervisor.send(new Connecting("failed createRfcommSocketToServiceRecord"));
         }
 
         try {
-            dataListener.connecting("try createRfcommSocket");
+            toSupervisor.send(new Connecting("try createRfcommSocket"));
             Method m = device.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
             BluetoothSocket socket = (BluetoothSocket) m.invoke(device, 1);
-            dataListener.connecting("ok createRfcommSocket");
+            toSupervisor.send(new Connecting("ok createRfcommSocket"));
             return socket;
         } catch (NoSuchMethodException e) {
-            dataListener.connecting("failed createRfcommSocket");
+            toSupervisor.send(new Connecting("failed createRfcommSocket"));
         } catch (IllegalAccessException e) {
-            dataListener.connecting("failed createRfcommSocket");
+            toSupervisor.send(new Connecting("failed createRfcommSocket"));
         } catch (InvocationTargetException e) {
-            dataListener.connecting("failed createRfcommSocket");
+            toSupervisor.send(new Connecting("failed createRfcommSocket"));
         }
 
-        dataListener.connecting("no method to get bluetooth socket worked");
+        toSupervisor.send(new Connecting("no method to get bluetooth socket worked"));
 
         throw new RuntimeException("Could not get bluetooth socket");
     }
@@ -178,24 +176,12 @@ class Worker extends Thread implements MessageHandler<Event> {
         }
     }
 
-    private byte[] listToArray(List<Byte> data) {
-        byte[] message = new byte[data.size()];
-        for (int i = 0; i < data.size(); i++) {
-            message[i] = data.get(i);
-        }
-        return message;
-    }
-
-    private ArrayList<Byte> arrayToList(byte[] message) {
-        ArrayList<Byte> im = new ArrayList<Byte>();
-        for (byte symbol : message) {
-            im.add(symbol);
-        }
-        return im;
-    }
-
-    public MessageSender<Event> getQueue() {
+    public MessageSender<ToWorker> getQueue() {
         return queue.getSender();
+    }
+
+    public MessageSender<ToSender> getSendQueue() {
+        return sender.getQueue();
     }
 
 }

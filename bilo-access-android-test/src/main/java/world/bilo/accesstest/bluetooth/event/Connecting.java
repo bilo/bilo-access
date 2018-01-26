@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.accesstest.bluetooth;
+package world.bilo.accesstest.bluetooth.event;
 
-class Error implements Event {
+public class Connecting implements ToSupervisor {
     private final String message;
 
-    public Error(String message) {
+    public Connecting(String message) {
         this.message = message;
     }
 
@@ -17,7 +17,7 @@ class Error implements Event {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Error error = (Error) o;
+        Connecting error = (Connecting) o;
 
         return message.equals(error.message);
     }
@@ -25,5 +25,9 @@ class Error implements Event {
     @Override
     public int hashCode() {
         return message.hashCode();
+    }
+
+    public String getMessage() {
+        return message;
     }
 }

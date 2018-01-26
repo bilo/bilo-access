@@ -9,40 +9,56 @@ import android.bluetooth.BluetoothDevice;
 
 import java.util.List;
 
-public class Supervisor {
-    private final Output reader;
+import world.bilo.accesstest.bluetooth.event.Connecting;
+import world.bilo.accesstest.bluetooth.event.Disconnect;
+import world.bilo.accesstest.bluetooth.event.Send;
+import world.bilo.accesstest.bluetooth.event.ToSupervisor;
+import world.bilo.accesstest.queue.poll.PollQueue;
+
+public class Supervisor implements Input {
+    private final PollQueue<ToSupervisor> queue;
     private Worker worker = null;
 
-    public Supervisor(Output handler) {
-        reader = handler;
+    public Supervisor(Output output) {
+        queue = new PollQueue<>(new QueueToOutput(output));
     }
 
+    @Override
     public void connect(BluetoothDevice device) {
         assert (worker == null);
-        reader.connecting("start connection");
-        worker = new Worker(reader, device);
+        queue.getSender().send(new Connecting("start connection"));
+        worker = new Worker(queue.getSender(), device);
         worker.start();
     }
 
+    @Override
     public void disconnect() {
         if (worker != null) {
-
             worker.getQueue().send(Disconnect.Instance);
-
-            try {
-                worker.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
             worker = null;
         }
     }
 
+    @Override
     public void send(List<Byte> data) {
         if (worker != null) {
-            worker.write(data);
+            Send message = new Send(listToArray(data));
+            worker.getSendQueue().send(message);
         }
     }
+
+    @Override
+    public void poll() {
+        queue.getReceiver().poll();
+    }
+
+    private byte[] listToArray(List<Byte> data) {
+        byte[] message = new byte[data.size()];
+        for (int i = 0; i < data.size(); i++) {
+            message[i] = data.get(i);
+        }
+        return message;
+    }
+
 
 }

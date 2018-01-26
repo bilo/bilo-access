@@ -8,8 +8,6 @@ package world.bilo.accesstest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 
-import world.bilo.accesstest.DeviceEntry;
-
 import java.util.ArrayList;
 import java.util.List;
 
