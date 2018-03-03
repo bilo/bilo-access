@@ -5,8 +5,6 @@
 
 package world.bilo.accesstest;
 
-import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,11 +22,15 @@ import java.util.List;
 
 import world.bilo.accesstest.bluetooth.Output;
 import world.bilo.accesstest.bluetooth.Supervisor;
+import world.bilo.accesstest.bluetooth.adapter.ActivityAdapter;
+import world.bilo.accesstest.bluetooth.adapter.Adapter;
+import world.bilo.accesstest.bluetooth.adapter.AdapterListener;
 
-public class SelectDeviceActivity extends AppCompatActivity implements Output, TickHandler {
+public class SelectDeviceActivity extends AppCompatActivity implements Output, TickHandler, AdapterListener {
     private ArrayAdapter<String> logAdapter = null;
     final private Supervisor supervisor = new Supervisor(this);
     final private Ticker ticker = new Ticker(this);
+    final private ActivityAdapter bluetoothAdapter = new ActivityAdapter(MessageId.REQUEST_ENABLE_BT.ordinal(), this, this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +71,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements Output, T
 
         ticker.start();
 
-        enableBluetooth();
+        bluetoothAdapter.enable();
     }
 
     private void logOutput(String message) {
@@ -83,18 +85,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements Output, T
     @Override
     protected void onRestart() {
         super.onRestart();
-        enableBluetooth();
-    }
-
-    //FIXME do this in the library
-    //FIXME notify about available devices in response
-    private void enableBluetooth() {
-        Intent intentBtEnabled = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        MessageId code = MessageId.REQUEST_ENABLE_BT;
-
-        logOutput("start activity: " + code + ", " + intentBtEnabled);
-
-        startActivityForResult(intentBtEnabled, code.ordinal());
+        bluetoothAdapter.enable();
     }
 
     @Override
@@ -105,35 +96,31 @@ public class SelectDeviceActivity extends AppCompatActivity implements Output, T
 
         switch (code) {
             case REQUEST_ENABLE_BT: {
-                if (resultCode == Activity.RESULT_OK) {
-                    updateListWithPairedDevices();
-                }
+                bluetoothAdapter.onActivityResult(resultCode, data);
                 break;
             }
         }
     }
 
-    private void updateListWithPairedDevices() {
-        List<DeviceEntry> data = Devices.list();
+    @Override
+    public void enabled(Adapter bluetoothAdapter) {
+        List<GuiDevice> data = new ArrayList<>();
+        for (BluetoothDevice device : bluetoothAdapter.devices()) {
+            data.add(new GuiDevice(device));
+        }
 
-        ArrayAdapter<DeviceEntry> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, data);
+        ArrayAdapter<GuiDevice> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, data);
 
         ListView listView = (ListView) findViewById(R.id.devices_list);
         listView.setAdapter(adapter);
 
         AdapterView.OnItemClickListener mMessageClickedHandler = new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView parent, View v, int position, long id) {
-                DeviceEntry device = (DeviceEntry) parent.getItemAtPosition(position);
+                GuiDevice device = (GuiDevice) parent.getItemAtPosition(position);
 
-                logOutput("connect to " + device.address);
+                logOutput("connect to " + device.device.getAddress());
 
-                BluetoothDevice bdevice = Devices.find(device.address);
-                if (bdevice == null) {
-                    disconnected();
-                }
-
-                supervisor.connect(bdevice);
+                supervisor.connect(device.device);
             }
         };
 
