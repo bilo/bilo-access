@@ -20,11 +20,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import world.bilo.accesstest.bluetooth.Output;
-import world.bilo.accesstest.bluetooth.Supervisor;
-import world.bilo.accesstest.bluetooth.adapter.ActivityAdapter;
-import world.bilo.accesstest.bluetooth.adapter.Adapter;
-import world.bilo.accesstest.bluetooth.adapter.AdapterListener;
+import ch.bitzgi.android.bluetooth.adapter.ActivityAdapter;
+import ch.bitzgi.android.bluetooth.adapter.Adapter;
+import ch.bitzgi.android.bluetooth.adapter.AdapterListener;
+import ch.bitzgi.android.bluetooth.spp.Output;
+import ch.bitzgi.android.bluetooth.spp.Supervisor;
 
 public class SelectDeviceActivity extends AppCompatActivity implements Output, TickHandler, AdapterListener {
     private ArrayAdapter<String> logAdapter = null;
