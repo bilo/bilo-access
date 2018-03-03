@@ -8,22 +8,38 @@ package world.bilo.accesstest.bluetooth;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import world.bilo.accesstest.bluetooth.event.Abort;
-import world.bilo.accesstest.bluetooth.event.Error;
-import world.bilo.accesstest.bluetooth.event.Send;
-import world.bilo.accesstest.bluetooth.event.ToSender;
-import world.bilo.accesstest.bluetooth.event.ToSupervisor;
+import world.bilo.accesstest.bluetooth.event.sender.Abort;
+import world.bilo.accesstest.bluetooth.event.sender.Send;
+import world.bilo.accesstest.bluetooth.event.sender.Visitor;
+import world.bilo.accesstest.bluetooth.event.supervisor.Error;
+import world.bilo.accesstest.bluetooth.event.supervisor.Event;
 import world.bilo.accesstest.queue.MessageHandler;
 import world.bilo.accesstest.queue.MessageSender;
 import world.bilo.accesstest.queue.thread.ThreadQueue;
 
-class Sender extends Thread implements MessageHandler<ToSender> {
-    private final ThreadQueue<ToSender> queue = new ThreadQueue<>(this, this);
+class Sender extends Thread implements MessageHandler<world.bilo.accesstest.bluetooth.event.sender.Event> {
+    private final ThreadQueue<world.bilo.accesstest.bluetooth.event.sender.Event> queue = new ThreadQueue<>(this, this);
     private final OutputStream stream;
-    private final MessageSender<ToSupervisor> toSupervisor;
+    private final MessageSender<Event> toSupervisor;
     private boolean running = false;
+    private final Visitor dispatcher = new Visitor() {
+        @Override
+        public void visit(Abort event) {
+            running = false;
+        }
 
-    public Sender(OutputStream stream, MessageSender<ToSupervisor> toSupervisor) {
+        @Override
+        public void visit(Send event) {
+            byte[] data = event.getData();
+            try {
+                stream.write(data);
+            } catch (IOException e1) {
+                toSupervisor.send(new Error(e1.getMessage()));
+            }
+        }
+    };
+
+    public Sender(OutputStream stream, MessageSender<Event> toSupervisor) {
         this.stream = stream;
         this.toSupervisor = toSupervisor;
     }
@@ -37,21 +53,11 @@ class Sender extends Thread implements MessageHandler<ToSender> {
     }
 
     @Override
-    public void handle(ToSender message) {
-        //FIXME use visitor pattern
-        if (message instanceof Send) {
-            byte[] data = ((Send) message).getData();
-            try {
-                stream.write(data);
-            } catch (IOException e1) {
-                toSupervisor.send(new Error(e1.getMessage()));
-            }
-        } else if (message instanceof Abort) {
-            running = false;
-        }
+    public void handle(world.bilo.accesstest.bluetooth.event.sender.Event message) {
+        message.accept(dispatcher);
     }
 
-    public MessageSender<ToSender> getQueue() {
+    public MessageSender<world.bilo.accesstest.bluetooth.event.sender.Event> getQueue() {
         return queue.getSender();
     }
 }

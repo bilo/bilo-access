@@ -9,16 +9,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import world.bilo.accesstest.bluetooth.event.Error;
-import world.bilo.accesstest.bluetooth.event.Received;
-import world.bilo.accesstest.bluetooth.event.ToSupervisor;
+import world.bilo.accesstest.bluetooth.event.supervisor.Error;
+import world.bilo.accesstest.bluetooth.event.supervisor.Received;
+import world.bilo.accesstest.bluetooth.event.supervisor.Event;
 import world.bilo.accesstest.queue.MessageSender;
 
 class Receiver extends Thread {
     private final InputStream inStream;
-    private final MessageSender<ToSupervisor> toSupervisor;
+    private final MessageSender<Event> toSupervisor;
 
-    public Receiver(InputStream inStream, MessageSender<ToSupervisor> toSupervisor) {
+    public Receiver(InputStream inStream, MessageSender<Event> toSupervisor) {
         this.inStream = inStream;
         this.toSupervisor = toSupervisor;
     }

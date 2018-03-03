@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.accesstest.bluetooth.event;
+package world.bilo.accesstest.bluetooth.event.supervisor;
 
-public class Disconnected implements ToSupervisor {
+public class Disconnected implements Event {
     static public final Disconnected Instance = new Disconnected();
 
     @Override
@@ -16,6 +16,11 @@ public class Disconnected implements ToSupervisor {
     @Override
     public boolean equals(Object obj) {
         return obj.getClass().equals(this.getClass());
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 
 }

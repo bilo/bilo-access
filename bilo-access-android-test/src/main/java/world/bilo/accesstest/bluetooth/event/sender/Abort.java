@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.accesstest.bluetooth.event;
+package world.bilo.accesstest.bluetooth.event.sender;
 
-public class Abort implements ToSender {
+public class Abort implements Event {
     static public final Abort Instance = new Abort();
 
     @Override
@@ -16,6 +16,11 @@ public class Abort implements ToSender {
     @Override
     public boolean equals(Object obj) {
         return obj.getClass().equals(this.getClass());
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 
 }

@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.accesstest.bluetooth.event;
+package world.bilo.accesstest.bluetooth.event.worker;
 
-public class Disconnect implements ToWorker {
+public class Disconnect implements Event {
     static public final Disconnect Instance = new Disconnect();
 
     @Override
@@ -18,4 +18,8 @@ public class Disconnect implements ToWorker {
         return obj.getClass().equals(this.getClass());
     }
 
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 }

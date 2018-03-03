@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: GPL-3.0
  */
 
-package world.bilo.accesstest.bluetooth.event;
+package world.bilo.accesstest.bluetooth.event.sender;
 
 import java.util.Arrays;
 
-public class Received implements ToSupervisor {
+public class Send implements Event {
     private final byte[] data;
 
-    public Received(byte[] data) {
+    public Send(byte[] data) {
         this.data = data;
     }
 
@@ -19,7 +19,7 @@ public class Received implements ToSupervisor {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Received received = (Received) o;
+        Send received = (Send) o;
 
         return Arrays.equals(data, received.data);
     }
@@ -32,4 +32,10 @@ public class Received implements ToSupervisor {
     public byte[] getData() {
         return data;
     }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
 }

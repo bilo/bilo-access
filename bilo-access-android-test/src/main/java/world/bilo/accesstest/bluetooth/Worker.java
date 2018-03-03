@@ -15,27 +15,32 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-import world.bilo.accesstest.bluetooth.event.Abort;
-import world.bilo.accesstest.bluetooth.event.Connected;
-import world.bilo.accesstest.bluetooth.event.Connecting;
-import world.bilo.accesstest.bluetooth.event.Disconnect;
-import world.bilo.accesstest.bluetooth.event.Disconnected;
-import world.bilo.accesstest.bluetooth.event.ToSender;
-import world.bilo.accesstest.bluetooth.event.ToSupervisor;
-import world.bilo.accesstest.bluetooth.event.ToWorker;
+import world.bilo.accesstest.bluetooth.event.sender.Abort;
+import world.bilo.accesstest.bluetooth.event.supervisor.Connected;
+import world.bilo.accesstest.bluetooth.event.supervisor.Connecting;
+import world.bilo.accesstest.bluetooth.event.supervisor.Disconnected;
+import world.bilo.accesstest.bluetooth.event.worker.Disconnect;
+import world.bilo.accesstest.bluetooth.event.worker.Event;
+import world.bilo.accesstest.bluetooth.event.worker.Visitor;
 import world.bilo.accesstest.queue.MessageHandler;
 import world.bilo.accesstest.queue.MessageSender;
 import world.bilo.accesstest.queue.thread.ThreadQueue;
 
-class Worker extends Thread implements MessageHandler<ToWorker> {
-    private final MessageSender<ToSupervisor> toSupervisor;
+class Worker extends Thread implements MessageHandler<Event> {
+    private final MessageSender<world.bilo.accesstest.bluetooth.event.supervisor.Event> toSupervisor;
     private final BluetoothDevice device;
-    private final ThreadQueue<ToWorker> queue = new ThreadQueue<>(this, this);
+    private final ThreadQueue<Event> queue = new ThreadQueue<>(this, this);
     private BluetoothSocket socket;
     private Receiver receiver;
     private Sender sender;
+    private final Visitor dispatcher = new Visitor() {
+        @Override
+        public void visit(Disconnect event) {
+            cancel();
+        }
+    };
 
-    public Worker(MessageSender<ToSupervisor> toSupervisor, BluetoothDevice device) {
+    public Worker(MessageSender<world.bilo.accesstest.bluetooth.event.supervisor.Event> toSupervisor, BluetoothDevice device) {
         this.toSupervisor = toSupervisor;
         this.device = device;
     }
@@ -86,14 +91,6 @@ class Worker extends Thread implements MessageHandler<ToWorker> {
         }
 
         toSupervisor.send(Disconnected.Instance);
-    }
-
-    @Override
-    public void handle(ToWorker event) {
-        //FIXME use visitor pattern
-        if (event instanceof Disconnect) {
-            cancel();
-        }
     }
 
     public void cancel() {
@@ -176,12 +173,18 @@ class Worker extends Thread implements MessageHandler<ToWorker> {
         }
     }
 
-    public MessageSender<ToWorker> getQueue() {
+    public MessageSender<Event> getQueue() {
         return queue.getSender();
     }
 
-    public MessageSender<ToSender> getSendQueue() {
+    public MessageSender<world.bilo.accesstest.bluetooth.event.sender.Event> getSendQueue() {
         return sender.getQueue();
     }
+
+    @Override
+    public void handle(Event event) {
+        event.accept(dispatcher);
+    }
+
 
 }

@@ -9,18 +9,18 @@ import android.bluetooth.BluetoothDevice;
 
 import java.util.List;
 
-import world.bilo.accesstest.bluetooth.event.Connecting;
-import world.bilo.accesstest.bluetooth.event.Disconnect;
-import world.bilo.accesstest.bluetooth.event.Send;
-import world.bilo.accesstest.bluetooth.event.ToSupervisor;
+import world.bilo.accesstest.bluetooth.event.supervisor.Connecting;
+import world.bilo.accesstest.bluetooth.event.worker.Disconnect;
+import world.bilo.accesstest.bluetooth.event.sender.Send;
+import world.bilo.accesstest.bluetooth.event.supervisor.Event;
 import world.bilo.accesstest.queue.poll.PollQueue;
 
 public class Supervisor implements Input {
-    private final PollQueue<ToSupervisor> queue;
+    private final PollQueue<Event> queue;
     private Worker worker = null;
 
     public Supervisor(Output output) {
-        queue = new PollQueue<>(new QueueToOutput(output));
+        queue = new PollQueue<>(new QueueToOutputAdapter(new SupervisorToOutput(output)));
     }
 
     @Override
