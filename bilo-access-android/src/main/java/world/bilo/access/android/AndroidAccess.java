@@ -130,4 +130,9 @@ public class AndroidAccess implements Access, Output {
     public Stream getStream() {
         return stream;
     }
+
+    public StreamBlocks getStack() {
+        return stack;
+    }
+
 }
