@@ -31,6 +31,7 @@ import world.bilo.util.ValueSet;
 
 public class AndroidAccess implements Access, Output {
     private final UniqueOrderedList<ConnectionChangeObserver> connectionChangeObserver = new UniqueOrderedList<>();
+    private boolean connected = false;
     private final Supervisor supervisor;
     private final Adapter adapter;
     private final PollTimer timer;
@@ -67,6 +68,7 @@ public class AndroidAccess implements Access, Output {
 
     @Override
     public void connected() {
+        connected = true;
         stack.start();
         for (ConnectionChangeObserver observer : connectionChangeObserver) {
             observer.connected();
@@ -75,6 +77,7 @@ public class AndroidAccess implements Access, Output {
 
     @Override
     public void disconnected() {
+        connected = false;
         for (ConnectionChangeObserver observer : connectionChangeObserver) {
             observer.disconnected();
         }
@@ -133,6 +136,11 @@ public class AndroidAccess implements Access, Output {
 
     public StreamBlocks getStack() {
         return stack;
+    }
+
+    @Override
+    public boolean isConnected() {
+        return connected;
     }
 
 }

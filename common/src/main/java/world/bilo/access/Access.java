@@ -19,4 +19,6 @@ public interface Access {
     public void disconnect();
 
     public UniqueOrderedList<ConnectionChangeObserver> getConnectionChangeObserver();
+
+    public boolean isConnected();
 }
