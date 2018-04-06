@@ -17,7 +17,7 @@ import world.bilo.stack.Rotation;
 import world.bilo.stack.support.Time;
 
 //TODO add tests and move to blockstack
-public class SimulatedDevice implements Device, PollStream {
+public class SimulatedDevice implements Device {
   private final Time time;
   private final String name;
   private final ArrayList<ArrayList<Byte>> blocks = new ArrayList<>();
@@ -36,11 +36,6 @@ public class SimulatedDevice implements Device, PollStream {
   @Override
   public String getName() {
     return name;
-  }
-
-  @Override
-  public State getState() {
-    return State.Connected;
   }
 
   @Override
@@ -135,11 +130,6 @@ public class SimulatedDevice implements Device, PollStream {
         throw new RuntimeException("unknown type: " + type);
     }
     return typeNum;
-  }
-
-  @Override
-  public PollStream stream() {
-    return this;
   }
 
 }

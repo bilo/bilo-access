@@ -1,4 +1,4 @@
-include 'common'
+include 'bilo-access-common'
 include 'bilo-access-simulated'
 include 'bilo-access-android'
 include 'bilo-access-android-test'

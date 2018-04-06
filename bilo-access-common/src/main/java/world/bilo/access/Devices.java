@@ -6,10 +6,11 @@
 package world.bilo.access;
 
 import java.util.Collection;
+import java.util.List;
 
 import world.bilo.util.UniqueOrderedList;
 
-public interface Access {
+public interface Devices {
     public void calc();
 
     public Collection<? extends Device> getDevices();
@@ -18,7 +19,5 @@ public interface Access {
 
     public void disconnect();
 
-    public UniqueOrderedList<ConnectionChangeObserver> getConnectionChangeObserver();
-
-    public boolean isConnected();
+    public void write(List<Byte> data);
 }
