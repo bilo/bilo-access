@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package world.bilo.access.android.internal;
+package world.bilo.access.android;
 
 import android.util.Log;
 

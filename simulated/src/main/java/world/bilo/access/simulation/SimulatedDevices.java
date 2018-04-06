@@ -8,8 +8,6 @@ package world.bilo.access.simulation;
 import java.util.List;
 
 import world.bilo.access.Device;
-import world.bilo.access.Devices;
-import world.bilo.access.OfflineDevice;
 import world.bilo.stack.support.Time;
 
 //TODO add tests

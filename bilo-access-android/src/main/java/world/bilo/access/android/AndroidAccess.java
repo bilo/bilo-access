@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.bitzgi.android.bluetooth.adapter.ActivityAdapter;
+import ch.bitzgi.android.bluetooth.adapter.Adapter;
 import ch.bitzgi.android.bluetooth.adapter.AdapterListener;
 import ch.bitzgi.android.bluetooth.spp.Output;
 import ch.bitzgi.android.bluetooth.spp.Supervisor;
@@ -19,7 +20,6 @@ import world.bilo.access.Access;
 import world.bilo.access.ConnectionChangeObserver;
 import world.bilo.access.Device;
 import world.bilo.access.LoggerDistributor;
-import world.bilo.access.android.internal.BlueDevice;
 import world.bilo.stack.Block;
 import world.bilo.stack.stream.Stream;
 import world.bilo.stack.stream.StreamBlocks;
@@ -29,10 +29,10 @@ import world.bilo.util.SetChangeDetector;
 import world.bilo.util.UniqueOrderedList;
 import world.bilo.util.ValueSet;
 
-public class BiloAccessAndroid implements Access, Output {
+public class AndroidAccess implements Access, Output {
     private final UniqueOrderedList<ConnectionChangeObserver> connectionChangeObserver = new UniqueOrderedList<>();
     private final Supervisor supervisor;
-    private final ActivityAdapter adapter;
+    private final Adapter adapter;
     private final PollTimer timer;
     private final LoggerDistributor stackDistributor = new LoggerDistributor();
     private final StreamBlocks stack;
@@ -44,7 +44,14 @@ public class BiloAccessAndroid implements Access, Output {
         }
     };
 
-    public BiloAccessAndroid(int bluetoothEnableCode, AdapterListener bluetoothEnableListener, Activity activity, Time time) {
+    public AndroidAccess(Adapter adapter, Time time) {
+        supervisor = new Supervisor(this);
+        this.adapter = adapter;
+        timer = new PollTimer(time);
+        stack = new StreamBlocks(stream, timer, stackDistributor);
+    }
+
+    public AndroidAccess(int bluetoothEnableCode, AdapterListener bluetoothEnableListener, Activity activity, Time time) {
         supervisor = new Supervisor(this);
         adapter = new ActivityAdapter(bluetoothEnableCode, bluetoothEnableListener, activity);
 
@@ -92,7 +99,7 @@ public class BiloAccessAndroid implements Access, Output {
 
     @Override
     public UniqueOrderedList<ConnectionChangeObserver> getConnectionChangeObserver() {
-        return null; //FIXME implement this
+        return connectionChangeObserver;
     }
 
     @Override
@@ -105,7 +112,7 @@ public class BiloAccessAndroid implements Access, Output {
         List<Device> devices = new ArrayList<Device>();
 
         for (BluetoothDevice device : adapter.devices()) {
-            devices.add(new BlueDevice(device));
+            devices.add(new AndroidDevice(device));
         }
 
         return devices;
@@ -113,7 +120,14 @@ public class BiloAccessAndroid implements Access, Output {
 
     @Override
     public void connect(Device device) {
-        supervisor.connect(((BlueDevice) device).getDevice());
+        supervisor.connect(((AndroidDevice) device).getDevice());
     }
 
+    public SetChangeDetector<Block> getModel() {
+        return model;
+    }
+
+    public Stream getStream() {
+        return stream;
+    }
 }

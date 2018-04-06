@@ -3,17 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package world.bilo.access.android.internal;
+package world.bilo.access.android;
 
 
 import android.bluetooth.BluetoothDevice;
 
 import world.bilo.access.Device;
 
-public class BlueDevice implements Device {
+public class AndroidDevice implements Device {
   private final BluetoothDevice device;
 
-  public BlueDevice(BluetoothDevice device) {
+  public AndroidDevice(BluetoothDevice device) {
     this.device = device;
   }
 

@@ -9,7 +9,7 @@ import java.util.Collection;
 
 import world.bilo.util.UniqueOrderedList;
 
-public interface BiloAccess {
+public interface Access {
     public void calc();
 
     public Collection<? extends Device> getDevices();
