@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    compile project(":common")
+    compile project(':bilo-access-common')
 }
 
 archivesBaseName = appName + "-simulated"
