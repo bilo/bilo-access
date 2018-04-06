@@ -8,8 +8,6 @@ package world.bilo.access;
 import java.util.Collection;
 import java.util.List;
 
-import world.bilo.util.UniqueOrderedList;
-
 public interface Devices {
     public void calc();
 
@@ -19,5 +17,9 @@ public interface Devices {
 
     public void disconnect();
 
+    boolean isConnected();
+
     public void write(List<Byte> data);
+
+    void setEventHandler(DevicesEventHandler handler);
 }

@@ -7,11 +7,10 @@ package world.bilo.access;
 
 import java.util.List;
 
-public interface DeviceEvents
-{
-    void connected();
+public interface DevicesEventHandler {
+    public void connected();
 
-    void disconnected();
+    public void disconnected();
 
     public void received(List<Byte> data);
 }

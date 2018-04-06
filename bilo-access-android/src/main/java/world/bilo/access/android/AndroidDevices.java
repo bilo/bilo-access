@@ -17,39 +17,41 @@ import ch.bitzgi.android.bluetooth.adapter.AdapterListener;
 import ch.bitzgi.android.bluetooth.spp.Output;
 import ch.bitzgi.android.bluetooth.spp.Supervisor;
 import world.bilo.access.Device;
-import world.bilo.access.DeviceEvents;
 import world.bilo.access.Devices;
+import world.bilo.access.DevicesEventHandler;
+import world.bilo.access.NullDevicesEventHandler;
 
-public class AndroidAccess implements Devices, Output {
+public class AndroidDevices implements Devices, Output {
     private final Supervisor supervisor;
     private final Adapter adapter;
-    private final DeviceEvents listener;
+    private DevicesEventHandler handler = new NullDevicesEventHandler();
+    private boolean connected = false;
 
-    public AndroidAccess(DeviceEvents listener, Adapter adapter) {
+    public AndroidDevices(Adapter adapter) {
         supervisor = new Supervisor(this);
-        this.listener = listener;
         this.adapter = adapter;
     }
 
-    public AndroidAccess(DeviceEvents listener, int bluetoothEnableCode, AdapterListener bluetoothEnableListener, Activity activity) {
+    public AndroidDevices(int bluetoothEnableCode, AdapterListener bluetoothEnableListener, Activity activity) {
         supervisor = new Supervisor(this);
-        this.listener = listener;
         adapter = new ActivityAdapter(bluetoothEnableCode, bluetoothEnableListener, activity);
     }
 
     @Override
     public void received(List<Byte> data) {
-        listener.received(data);
+        handler.received(data);
     }
 
     @Override
     public void connected() {
-        listener.connected();
+        connected = true;
+        handler.connected();
     }
 
     @Override
     public void disconnected() {
-        listener.disconnected();
+        connected = false;
+        handler.disconnected();
     }
 
     @Override
@@ -89,8 +91,18 @@ public class AndroidAccess implements Devices, Output {
     }
 
     @Override
+    public boolean isConnected() {
+        return connected;
+    }
+
+    @Override
     public void write(List<Byte> data) {
         supervisor.send(data);
+    }
+
+    @Override
+    public void setEventHandler(DevicesEventHandler handler) {
+        this.handler = handler;
     }
 
 }
