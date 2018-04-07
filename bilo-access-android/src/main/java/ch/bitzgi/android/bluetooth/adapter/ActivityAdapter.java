@@ -30,9 +30,11 @@ public class ActivityAdapter implements Adapter {
         activity.startActivityForResult(intentBtEnabled, code);
     }
 
-    public void onActivityResult(int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            listener.enabled(this);
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == code) {
+            if (resultCode == Activity.RESULT_OK) {
+                listener.enabled(this);
+            }
         }
     }
 

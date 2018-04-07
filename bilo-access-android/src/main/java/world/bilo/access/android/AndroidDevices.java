@@ -7,6 +7,7 @@ package world.bilo.access.android;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ import world.bilo.access.NullDevicesEventHandler;
 
 public class AndroidDevices implements Devices, Output, AdapterListener {
     private final Supervisor supervisor;
-    private final Adapter adapter;
+    private final ActivityAdapter adapter;
     private DevicesEventHandler handler = new NullDevicesEventHandler();
     private boolean connected = false;
 
@@ -108,6 +109,10 @@ public class AndroidDevices implements Devices, Output, AdapterListener {
     @Override
     public void enabled(Adapter adapter) {
         handler.turnedOn();
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        adapter.onActivityResult(requestCode, resultCode, data);
     }
 }
 
