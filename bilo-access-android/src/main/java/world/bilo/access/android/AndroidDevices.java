@@ -21,20 +21,15 @@ import world.bilo.access.Devices;
 import world.bilo.access.DevicesEventHandler;
 import world.bilo.access.NullDevicesEventHandler;
 
-public class AndroidDevices implements Devices, Output {
+public class AndroidDevices implements Devices, Output, AdapterListener {
     private final Supervisor supervisor;
     private final Adapter adapter;
     private DevicesEventHandler handler = new NullDevicesEventHandler();
     private boolean connected = false;
 
-    public AndroidDevices(Adapter adapter) {
+    public AndroidDevices(int bluetoothEnableCode, Activity activity) {
         supervisor = new Supervisor(this);
-        this.adapter = adapter;
-    }
-
-    public AndroidDevices(int bluetoothEnableCode, AdapterListener bluetoothEnableListener, Activity activity) {
-        supervisor = new Supervisor(this);
-        adapter = new ActivityAdapter(bluetoothEnableCode, bluetoothEnableListener, activity);
+        adapter = new ActivityAdapter(bluetoothEnableCode, this, activity);
     }
 
     @Override
@@ -62,6 +57,11 @@ public class AndroidDevices implements Devices, Output {
     @Override
     public void error(String message) {
 
+    }
+
+    @Override
+    public void turnOn() {
+        adapter.enable();
     }
 
     @Override
@@ -105,5 +105,9 @@ public class AndroidDevices implements Devices, Output {
         this.handler = handler;
     }
 
+    @Override
+    public void enabled(Adapter adapter) {
+        handler.turnedOn();
+    }
 }
 

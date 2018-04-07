@@ -8,6 +8,8 @@ package world.bilo.access;
 import java.util.List;
 
 public interface DevicesEventHandler {
+    public void turnedOn();
+
     public void connected();
 
     public void disconnected();

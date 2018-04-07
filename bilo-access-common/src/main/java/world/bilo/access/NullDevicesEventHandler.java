@@ -9,6 +9,11 @@ import java.util.List;
 
 public class NullDevicesEventHandler implements DevicesEventHandler {
     @Override
+    public void turnedOn() {
+
+    }
+
+    @Override
     public void connected() {
 
     }

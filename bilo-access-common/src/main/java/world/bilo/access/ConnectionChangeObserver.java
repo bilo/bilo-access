@@ -7,8 +7,9 @@ package world.bilo.access;
 
 public interface ConnectionChangeObserver {
 
+	public void turnedOn();
+
 	public void connected();
 
 	public void disconnected();
-
 }

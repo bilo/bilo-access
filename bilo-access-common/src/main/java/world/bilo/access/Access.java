@@ -51,6 +51,13 @@ public class Access implements DevicesEventHandler {
     }
 
     @Override
+    public void turnedOn() {
+        for (ConnectionChangeObserver observer : connectionChangeObserver) {
+            observer.turnedOn();
+        }
+    }
+
+    @Override
     public void connected() {
         stack.start();
         for (ConnectionChangeObserver observer : connectionChangeObserver) {

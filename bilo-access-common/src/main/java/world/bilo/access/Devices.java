@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.List;
 
 public interface Devices {
+    public void turnOn();
+
     public void calc();
 
     public Collection<? extends Device> getDevices();
