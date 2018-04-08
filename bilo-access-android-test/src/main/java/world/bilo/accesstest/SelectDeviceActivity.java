@@ -22,15 +22,14 @@ import java.util.List;
 
 import ch.bitzgi.android.bluetooth.adapter.ActivityAdapter;
 import ch.bitzgi.android.bluetooth.adapter.Adapter;
-import ch.bitzgi.android.bluetooth.adapter.AdapterListener;
 import ch.bitzgi.android.bluetooth.spp.Output;
 import ch.bitzgi.android.bluetooth.spp.Supervisor;
 
-public class SelectDeviceActivity extends AppCompatActivity implements Output, TickHandler, AdapterListener {
+public class SelectDeviceActivity extends AppCompatActivity implements Output, TickHandler {
     private ArrayAdapter<String> logAdapter = null;
     final private Supervisor supervisor = new Supervisor(this);
     final private Ticker ticker = new Ticker(this);
-    final private ActivityAdapter bluetoothAdapter = new ActivityAdapter(MessageId.REQUEST_ENABLE_BT.ordinal(), this, this);
+    final private ActivityAdapter bluetoothAdapter = new ActivityAdapter(MessageId.REQUEST_ENABLE_BT.ordinal(), this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

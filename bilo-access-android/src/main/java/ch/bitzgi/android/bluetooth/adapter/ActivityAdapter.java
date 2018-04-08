@@ -15,27 +15,22 @@ import java.util.Set;
 
 public class ActivityAdapter implements Adapter {
     private final int code;
-    private final AdapterListener listener;
     private final Activity activity;
 
-    public ActivityAdapter(int code, AdapterListener listener, Activity activity) {
+    public ActivityAdapter(int code, Activity activity) {
         this.code = code;
-        this.listener = listener;
         this.activity = activity;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return BluetoothAdapter.getDefaultAdapter().isEnabled();
     }
 
     @Override
     public void enable() {
         Intent intentBtEnabled = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         activity.startActivityForResult(intentBtEnabled, code);
-    }
-
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == code) {
-            if (resultCode == Activity.RESULT_OK) {
-                listener.enabled(this);
-            }
-        }
     }
 
     @Override

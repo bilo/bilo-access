@@ -7,14 +7,11 @@ package world.bilo.access.android;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
-import android.content.Intent;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import ch.bitzgi.android.bluetooth.adapter.ActivityAdapter;
-import ch.bitzgi.android.bluetooth.adapter.Adapter;
-import ch.bitzgi.android.bluetooth.adapter.AdapterListener;
 import ch.bitzgi.android.bluetooth.spp.Output;
 import ch.bitzgi.android.bluetooth.spp.Supervisor;
 import world.bilo.access.Device;
@@ -22,15 +19,16 @@ import world.bilo.access.Devices;
 import world.bilo.access.DevicesEventHandler;
 import world.bilo.access.NullDevicesEventHandler;
 
-public class AndroidDevices implements Devices, Output, AdapterListener {
+public class AndroidDevices implements Devices, Output {
     private final Supervisor supervisor;
     private final ActivityAdapter adapter;
     private DevicesEventHandler handler = new NullDevicesEventHandler();
+    private boolean turnedOn = false;
     private boolean connected = false;
 
     public AndroidDevices(int bluetoothEnableCode, Activity activity) {
         supervisor = new Supervisor(this);
-        adapter = new ActivityAdapter(bluetoothEnableCode, this, activity);
+        adapter = new ActivityAdapter(bluetoothEnableCode, activity);
     }
 
     @Override
@@ -62,11 +60,18 @@ public class AndroidDevices implements Devices, Output, AdapterListener {
 
     @Override
     public void turnOn() {
+        turnedOn = false;
         adapter.enable();
     }
 
     @Override
     public void calc() {
+        boolean newTurnedOn = adapter.isEnabled();
+        if (newTurnedOn & !turnedOn) {
+            handler.turnedOn();
+        }
+        turnedOn = newTurnedOn;
+
         supervisor.poll();
     }
 
@@ -104,15 +109,6 @@ public class AndroidDevices implements Devices, Output, AdapterListener {
     @Override
     public void setEventHandler(DevicesEventHandler handler) {
         this.handler = handler;
-    }
-
-    @Override
-    public void enabled(Adapter adapter) {
-        handler.turnedOn();
-    }
-
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        adapter.onActivityResult(requestCode, resultCode, data);
     }
 }
 
