@@ -1,0 +1,28 @@
+apply plugin: 'java-library'
+apply plugin: 'maven'
+
+sourceCompatibility = 1.7
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+repositories {
+    jcenter()
+    mavenLocal()
+}
+
+dependencies {
+    compile project(':bilo-access-common')
+}
+
+archivesBaseName = appName + "-simulated"
+
+jar {
+    manifest {
+        attributes('Implementation-Title': archivesBaseName,
+                'Implementation-Version': project.version)
+    }
+}
+
+eclipse.project {
+    name = archivesBaseName
+}
+

@@ -7,18 +7,19 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.1'
+        classpath 'com.android.tools.build:gradle:3.1.1'
     }
 }
 
 repositories {
-    mavenLocal()
+    jcenter()
     google()
+    mavenLocal()
 }
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    buildToolsVersion '27.0.3'
 
     defaultConfig {
         minSdkVersion 14
@@ -33,7 +34,7 @@ android {
 }
 
 dependencies {
-    implementation project(":common")
+    implementation project(':bilo-access-common')
     implementation 'com.android.support:appcompat-v7:26.1.0'
 }
 
