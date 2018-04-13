@@ -1,6 +1,6 @@
 /*
- * Copyright 2017 Urs Fässler
- * SPDX-License-Identifier: GPL-3.0
+ * Copyright 2018 Urs Fässler
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package ch.bitzgi.android.bluetooth.adapter;
