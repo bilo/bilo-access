@@ -21,6 +21,7 @@ import ch.bitzgi.android.bluetooth.spp.event.supervisor.Connecting;
 import ch.bitzgi.android.bluetooth.spp.event.supervisor.Disconnected;
 import ch.bitzgi.android.bluetooth.spp.event.worker.Disconnect;
 import ch.bitzgi.android.bluetooth.spp.event.worker.Event;
+import ch.bitzgi.android.bluetooth.spp.event.worker.ReadError;
 import ch.bitzgi.android.bluetooth.spp.event.worker.Visitor;
 import ch.bitzgi.android.bluetooth.spp.queue.MessageHandler;
 import ch.bitzgi.android.bluetooth.spp.queue.MessageSender;
@@ -36,6 +37,11 @@ class Worker extends Thread implements MessageHandler<Event> {
     private final Visitor dispatcher = new Visitor() {
         @Override
         public void visit(Disconnect event) {
+            cancel();
+        }
+
+        @Override
+        public void visit(ReadError event) {
             cancel();
         }
     };
@@ -59,7 +65,7 @@ class Worker extends Thread implements MessageHandler<Event> {
             return;
         }
 
-        receiver = new Receiver(inStream, toSupervisor);
+        receiver = new Receiver(inStream, toSupervisor, queue.getSender());
         sender = new Sender(getOutputStream(socket), toSupervisor);
 
         receiver.start();

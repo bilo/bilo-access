@@ -9,18 +9,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import ch.bitzgi.android.bluetooth.spp.event.supervisor.Error;
 import ch.bitzgi.android.bluetooth.spp.event.supervisor.Event;
 import ch.bitzgi.android.bluetooth.spp.event.supervisor.Received;
+import ch.bitzgi.android.bluetooth.spp.event.worker.ReadError;
 import ch.bitzgi.android.bluetooth.spp.queue.MessageSender;
 
 class Receiver extends Thread {
     private final InputStream inStream;
     private final MessageSender<Event> toSupervisor;
+    private final MessageSender<ch.bitzgi.android.bluetooth.spp.event.worker.Event> toWorker;
 
-    public Receiver(InputStream inStream, MessageSender<Event> toSupervisor) {
+    public Receiver(InputStream inStream, MessageSender<Event> toSupervisor, MessageSender<ch.bitzgi.android.bluetooth.spp.event.worker.Event> toWorker) {
         this.inStream = inStream;
         this.toSupervisor = toSupervisor;
+        this.toWorker = toWorker;
     }
 
     public void run() {
@@ -32,7 +34,7 @@ class Receiver extends Thread {
                 buffer = Arrays.copyOf(buffer, bytes);
                 toSupervisor.send(new Received(buffer));
             } catch (IOException e) {
-                toSupervisor.send(new Error(e.getMessage()));
+                toWorker.send(ReadError.Instance);
                 break;
             }
         }
