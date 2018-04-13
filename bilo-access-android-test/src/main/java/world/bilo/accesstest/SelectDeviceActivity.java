@@ -24,12 +24,18 @@ import ch.bitzgi.android.bluetooth.adapter.ActivityAdapter;
 import ch.bitzgi.android.bluetooth.adapter.Adapter;
 import ch.bitzgi.android.bluetooth.spp.Output;
 import ch.bitzgi.android.bluetooth.spp.Supervisor;
+import world.bilo.access.Device;
+import world.bilo.access.DevicesEventHandler;
+import world.bilo.access.android.AndroidDevices;
 
-public class SelectDeviceActivity extends AppCompatActivity implements Output, TickHandler {
+public class SelectDeviceActivity extends AppCompatActivity implements Output, TickHandler, DevicesEventHandler {
     private ArrayAdapter<String> logAdapter = null;
-    final private Supervisor supervisor = new Supervisor(this);
     final private Ticker ticker = new Ticker(this);
-    final private ActivityAdapter bluetoothAdapter = new ActivityAdapter(MessageId.REQUEST_ENABLE_BT.ordinal(), this);
+    final private AndroidDevices devices = new AndroidDevices(MessageId.REQUEST_ENABLE_BT.ordinal(), this);
+
+    public SelectDeviceActivity() {
+        devices.setEventHandler(this);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +58,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements Output, T
                         data.add((byte) 0x81);
 
                         logOutput("send: " + hexString(data));
-                        supervisor.send(data);
+                        devices.write(data);
                     }
                 }
         );
@@ -62,7 +68,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements Output, T
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        supervisor.disconnect();
+                        devices.disconnect();
                     }
                 }
         );
@@ -70,7 +76,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements Output, T
 
         ticker.start();
 
-        bluetoothAdapter.enable();
+        devices.turnOn();
     }
 
     private void logOutput(String message) {
@@ -84,27 +90,13 @@ public class SelectDeviceActivity extends AppCompatActivity implements Output, T
     @Override
     protected void onRestart() {
         super.onRestart();
-        bluetoothAdapter.enable();
+        devices.turnOn();
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        MessageId code = MessageId.values()[requestCode];
-
-        logInput("activity result: " + code + " = " + resultCode);
-
-        switch (code) {
-            case REQUEST_ENABLE_BT: {
-                bluetoothAdapter.onActivityResult(resultCode, data);
-                break;
-            }
-        }
-    }
-
-    @Override
-    public void enabled(Adapter bluetoothAdapter) {
+    public void turnedOn() {
         List<GuiDevice> data = new ArrayList<>();
-        for (BluetoothDevice device : bluetoothAdapter.devices()) {
+        for (Device device : devices.getDevices()) {
             data.add(new GuiDevice(device));
         }
 
@@ -119,7 +111,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements Output, T
 
                 logOutput("connect to " + device.device.getAddress());
 
-                supervisor.connect(device.device);
+                devices.connect(device.device);
             }
         };
 
@@ -173,7 +165,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements Output, T
 
     @Override
     public void tick() {
-        supervisor.poll();
+        devices.calc();
     }
 }
 

@@ -5,12 +5,12 @@
 
 package world.bilo.accesstest;
 
-import android.bluetooth.BluetoothDevice;
+import world.bilo.access.Device;
 
 class GuiDevice {
-    public final BluetoothDevice device;
+    public final Device device;
 
-    GuiDevice(BluetoothDevice device) {
+    GuiDevice(Device device) {
         this.device = device;
     }
 
