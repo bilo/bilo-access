@@ -11,24 +11,24 @@ import android.bluetooth.BluetoothDevice;
 import world.bilo.access.Device;
 
 public class AndroidDevice implements Device {
-  private final BluetoothDevice device;
+    private final BluetoothDevice device;
 
-  public AndroidDevice(BluetoothDevice device) {
-    this.device = device;
-  }
+    public AndroidDevice(BluetoothDevice device) {
+        this.device = device;
+    }
 
-  public BluetoothDevice getDevice() {
-    return device;
-  }
+    public BluetoothDevice getDevice() {
+        return device;
+    }
 
-  @Override
-  public String getName() {
-    return device.getName();
-  }
+    @Override
+    public String getName() {
+        return device.getName();
+    }
 
-  @Override
-  public String getAddress() {
-    return device.getAddress();
-  }
+    @Override
+    public String getAddress() {
+        return device.getAddress();
+    }
 
 }

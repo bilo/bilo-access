@@ -6,7 +6,8 @@
 package world.bilo.access;
 
 public interface Device {
-	public String getName();
-	public String getAddress();
+    public String getName();
+
+    public String getAddress();
 
 }

@@ -5,8 +5,6 @@
 
 package world.bilo.accesstest;
 
-import android.bluetooth.BluetoothDevice;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -20,10 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import ch.bitzgi.android.bluetooth.adapter.ActivityAdapter;
-import ch.bitzgi.android.bluetooth.adapter.Adapter;
 import ch.bitzgi.android.bluetooth.spp.Output;
-import ch.bitzgi.android.bluetooth.spp.Supervisor;
 import world.bilo.access.Device;
 import world.bilo.access.DevicesEventHandler;
 import world.bilo.access.android.AndroidDevices;

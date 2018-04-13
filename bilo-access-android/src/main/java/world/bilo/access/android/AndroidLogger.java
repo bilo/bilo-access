@@ -10,14 +10,14 @@ import android.util.Log;
 import world.bilo.stack.Logger;
 
 public class AndroidLogger implements Logger {
-  static final private String Name = "bilo.library";
+    static final private String Name = "bilo.library";
 
-  public void error(String message) {
-    Log.e(Name, message);
-  }
+    public void error(String message) {
+        Log.e(Name, message);
+    }
 
-  @Override
-  public void debug(String message) {
-    Log.d(Name, message);
-  }
+    @Override
+    public void debug(String message) {
+        Log.d(Name, message);
+    }
 }
