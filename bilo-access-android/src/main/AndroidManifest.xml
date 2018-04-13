@@ -2,12 +2,9 @@
 
     package="world.bilo.androidaccess">
 
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
-    <application
-        android:label="@string/app_name"
-        >
-    </application>
+    <application android:label="@string/app_name"></application>
 
 </manifest>

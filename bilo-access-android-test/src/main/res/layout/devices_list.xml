@@ -26,23 +26,21 @@
         android:layout_above="@+id/disconnect"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:text="@string/send"
-        />
+        android:text="@string/send" />
 
     <Button
         android:id="@+id/disconnect"
         android:layout_above="@+id/connection_log"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:text="@string/disconnect"
-        />
+        android:text="@string/disconnect" />
 
     <ListView
         android:id="@+id/connection_log"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_alignParentLeft="true"
-    android:layout_alignParentBottom="true"
-    android:layout_alignParentStart="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>
