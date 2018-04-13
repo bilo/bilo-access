@@ -19,8 +19,6 @@ public interface Devices {
 
     public void disconnect();
 
-    boolean isConnected();
-
     public void write(List<Byte> data);
 
     void setEventHandler(DevicesEventHandler handler);

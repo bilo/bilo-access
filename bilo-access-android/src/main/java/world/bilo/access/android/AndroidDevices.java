@@ -24,7 +24,6 @@ public class AndroidDevices implements Devices, Output {
     private final ActivityAdapter adapter;
     private DevicesEventHandler handler = new NullDevicesEventHandler();
     private boolean turnedOn = false;
-    private boolean connected = false;
 
     public AndroidDevices(int bluetoothEnableCode, Activity activity) {
         supervisor = new Supervisor(this);
@@ -38,24 +37,20 @@ public class AndroidDevices implements Devices, Output {
 
     @Override
     public void connected() {
-        connected = true;
         handler.connected();
     }
 
     @Override
     public void disconnected() {
-        connected = false;
         handler.disconnected();
     }
 
     @Override
     public void connecting(String message) {
-
     }
 
     @Override
     public void error(String message) {
-
     }
 
     @Override
@@ -94,11 +89,6 @@ public class AndroidDevices implements Devices, Output {
     @Override
     public void connect(Device device) {
         supervisor.connect(((AndroidDevice) device).getDevice());
-    }
-
-    @Override
-    public boolean isConnected() {
-        return connected;
     }
 
     @Override
