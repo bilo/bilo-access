@@ -7,7 +7,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.1'
+        classpath 'com.android.tools.build:gradle:3.2.1'
     }
 }
 
@@ -20,7 +20,7 @@ repositories {
 android {
     project.archivesBaseName = "bilo-access-test";
     compileSdkVersion 26
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "world.bilo.accesstest"
         minSdkVersion 15
